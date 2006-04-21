@@ -1,0 +1,10 @@
+setup.py
+pitacard/__init__.py
+pitacard/db.py
+pitacard/leitner.py
+pitacard/main.py
+pitacard/model.py
+pitacard/pitacard.py
+pitacard/save_file_mgr.py
+pitacard/glade/pitacard.glade
+scripts/pitacard

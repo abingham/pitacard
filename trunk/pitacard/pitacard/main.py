@@ -41,6 +41,7 @@ def main(dev=False):
         print 'WARNING: Unable to load config file',options.configfile
 
     m = UI(os.path.join(os.path.dirname(__file__),
+                        'glade',
                         'pitacard.glade'),
            config)
 
