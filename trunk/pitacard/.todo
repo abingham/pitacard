@@ -32,6 +32,12 @@
     <note priority="medium" time="1145412999" done="1145443817">
         new card editing should put input focus on 'front' edit
     </note>
+    <note priority="medium" time="1145582790" done="1145587345">
+        update web site
+    </note>
+    <note priority="medium" time="1145582797" done="1145587346">
+        update sourceforge page
+    </note>
     <note priority="medium" time="1144598057">
         consider support for adding sounds, images, etc. to cards
     </note>
@@ -62,14 +68,11 @@
     <note priority="medium" time="1145582782">
         improve the INSTALL file (prefix info, etc.). Perhaps just find a good one from another python project and install it
     </note>
-    <note priority="medium" time="1145582790">
-        update web site
-    </note>
-    <note priority="medium" time="1145582797">
-        update sourceforge page
-    </note>
     <note priority="medium" time="1145582804">
         update freshmeat entry
+        <note priority="medium" time="1145587362">
+            make sure all changes to freshmeat page are updated
+        </note>
     </note>
     <note priority="medium" time="1145582929">
         write some docs on basic usage, config file, command line, etc.
