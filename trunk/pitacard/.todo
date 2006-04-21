@@ -71,4 +71,7 @@
     <note priority="medium" time="1145582804">
         update freshmeat entry
     </note>
+    <note priority="medium" time="1145582929">
+        write some docs on basic usage, config file, command line, etc.
+    </note>
 </todo>
