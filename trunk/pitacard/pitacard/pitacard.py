@@ -36,18 +36,29 @@ class UI(SaveFileMgr):
         self.xml = gtk.glade.XML(self.gladefile, 'MainWindow')
         
         self.main_window = self.xml.get_widget('MainWindow')
+        self.main_window.resize(500,500)
         self.init_card_list()
 
         self.edit_card_button = self.xml.get_widget('edit_card_button')
         self.delete_card_button = self.xml.get_widget('delete_card_button')
         self.do_review_button = self.xml.get_widget('do_review_button')
 
+        self.edit_card_menu = self.xml.get_widget('edit_card_menu')
+        self.delete_card_menu = self.xml.get_widget('delete_card_menu')
+        self.review_menu = self.xml.get_widget('review_menu')
+
         self.xml.signal_autoconnect({
             'on_add_card_button_clicked' :
             lambda x: self.add_card(),
+            'on_add_card_menu_activated' :
+            lambda x: self.add_card(),
             'on_edit_card_button_clicked' :
             lambda x: self.edit_selected_card(),
+            'on_edit_card_menu_activated' :
+            lambda x: self.edit_selected_card(),
             'on_delete_card_button_clicked' :
+            lambda x: self.delete_selected_card(),
+            'on_delte_card_menu_clicked' :
             lambda x: self.delete_selected_card(),
             'on_do_review_button_clicked' :
             lambda x: self.do_review(),
@@ -59,7 +70,7 @@ class UI(SaveFileMgr):
             lambda x: self.open(),
             'on_quit_menu_activate' :
             lambda x: self.quit(),
-            'on_leitner_log2_menu_activate' :
+            'on_review_menu_activate' :
             lambda x: self.do_review(),
             'on_card_list_row_activated' :
             lambda v,p,c: self.edit_selected_card(),
@@ -90,8 +101,6 @@ class UI(SaveFileMgr):
 
         col = gtk.TreeViewColumn('Front')
         cell = gtk.CellRendererText()
-        #cell.set_property('editable', True)
-        #cell.connect('edited', self.front_edited)
         col.pack_start(cell, True)
         col.add_attribute(cell, 'text', FRONT_IDX)
         col.set_sort_column_id(FRONT_IDX)
@@ -99,8 +108,6 @@ class UI(SaveFileMgr):
 
         col = gtk.TreeViewColumn('Back')
         cell = gtk.CellRendererText()
-        #cell.set_property('editable', True)
-        #cell.connect('edited', self.back_edited)
         col.pack_start(cell, True)
         col.add_attribute(cell, 'text', BACK_IDX)
         col.set_sort_column_id(BACK_IDX)
@@ -119,15 +126,22 @@ class UI(SaveFileMgr):
                       lambda m,p,i: self.deck_changed())
 
     def sync_ui(self):
+        have_cards = len(self.card_list.get_model()) > 0
+        
         # only review if there is at least one card
-        self.do_review_button.set_sensitive(len(self.card_list.get_model()) > 0)
+        self.do_review_button.set_sensitive(have_cards)
+        self.review_menu.set_sensitive(have_cards)
 
         sel = self.card_list.get_selection()
         model,iter = sel.get_selected()
 
+        have_selected = not not iter
         # only edit or delete if there is a selected card
-        self.edit_card_button.set_sensitive(not not iter)
-        self.delete_card_button.set_sensitive(not not iter)
+        self.edit_card_button.set_sensitive(have_selected)
+        self.delete_card_button.set_sensitive(have_selected)
+
+        self.edit_card_menu.set_sensitive(have_selected)
+        self.delete_card_menu.set_sensitive(have_selected)
 
     def deck_changed(self):
         self.flag_change()
@@ -210,5 +224,5 @@ class UI(SaveFileMgr):
         model.remove(iter)
 
     def do_review(self):
-        l = leitner.Leitner_log2(self.gladefile,
-                                 self.card_list.get_model())
+        l = leitner.Leitner(self.gladefile,
+                            self.card_list.get_model())

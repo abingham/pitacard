@@ -92,21 +92,66 @@
 	  </child>
 
 	  <child>
-	    <widget class="GtkMenuItem" id="review1">
+	    <widget class="GtkMenuItem" id="card1">
 	      <property name="visible">True</property>
-	      <property name="label" translatable="yes">_Review</property>
+	      <property name="label" translatable="yes">_Cards</property>
 	      <property name="use_underline">True</property>
-	      <signal name="activate" handler="on_review1_activate" last_modification_time="Mon, 10 Apr 2006 23:47:57 GMT"/>
+	      <signal name="activate" handler="on_card1_activate" last_modification_time="Sat, 22 Apr 2006 05:16:13 GMT"/>
 
 	      <child>
-		<widget class="GtkMenu" id="review1_menu">
+		<widget class="GtkMenu" id="card1_menu">
 
 		  <child>
-		    <widget class="GtkMenuItem" id="leitner_log2">
+		    <widget class="GtkImageMenuItem" id="add_card_menu">
 		      <property name="visible">True</property>
-		      <property name="label" translatable="yes">Leitner (log2)</property>
+		      <property name="label">gtk-add</property>
+		      <property name="use_stock">True</property>
+		      <signal name="activate" handler="on_add_card_menu_activate" last_modification_time="Sat, 22 Apr 2006 05:16:13 GMT"/>
+		    </widget>
+		  </child>
+
+		  <child>
+		    <widget class="GtkImageMenuItem" id="edit_card_menu">
+		      <property name="visible">True</property>
+		      <property name="label">gtk-edit</property>
+		      <property name="use_stock">True</property>
+		      <signal name="activate" handler="on_edit_card_menu_activate" last_modification_time="Sat, 22 Apr 2006 05:16:13 GMT"/>
+		    </widget>
+		  </child>
+
+		  <child>
+		    <widget class="GtkImageMenuItem" id="delete_card_menu">
+		      <property name="visible">True</property>
+		      <property name="label">gtk-delete</property>
+		      <property name="use_stock">True</property>
+		      <signal name="activate" handler="on_delete_card_menu_activate" last_modification_time="Sat, 22 Apr 2006 05:16:13 GMT"/>
+		    </widget>
+		  </child>
+
+		  <child>
+		    <widget class="GtkSeparatorMenuItem" id="separator1">
+		      <property name="visible">True</property>
+		    </widget>
+		  </child>
+
+		  <child>
+		    <widget class="GtkImageMenuItem" id="review_menu">
+		      <property name="visible">True</property>
+		      <property name="label" translatable="yes">_Review</property>
 		      <property name="use_underline">True</property>
-		      <signal name="activate" handler="on_leitner_log2_menu_activate" last_modification_time="Mon, 10 Apr 2006 23:47:57 GMT"/>
+		      <signal name="activate" handler="on_review_menu_activate" last_modification_time="Sat, 22 Apr 2006 05:16:13 GMT"/>
+
+		      <child internal-child="image">
+			<widget class="GtkImage" id="image1">
+			  <property name="visible">True</property>
+			  <property name="stock">gtk-execute</property>
+			  <property name="icon_size">1</property>
+			  <property name="xalign">0.5</property>
+			  <property name="yalign">0.5</property>
+			  <property name="xpad">0</property>
+			  <property name="ypad">0</property>
+			</widget>
+		      </child>
 		    </widget>
 		  </child>
 		</widget>
@@ -633,13 +678,15 @@
 	      <child>
 		<widget class="GtkToolButton" id="next_button">
 		  <property name="visible">True</property>
-		  <property name="tooltip" translatable="yes">Click to show answer (shortcut: n)</property>
-		  <property name="stock_id">gtk-media-next</property>
+		  <property name="tooltip" translatable="yes">Click to show answer (shortcut: s)</property>
+		  <property name="label" translatable="yes">Show</property>
+		  <property name="use_underline">True</property>
+		  <property name="stock_id">gtk-ok</property>
 		  <property name="visible_horizontal">True</property>
 		  <property name="visible_vertical">True</property>
 		  <property name="is_important">False</property>
 		  <signal name="clicked" handler="on_next_button_clicked" last_modification_time="Tue, 11 Apr 2006 02:23:06 GMT"/>
-		  <accelerator key="n" modifiers="0" signal="clicked"/>
+		  <accelerator key="s" modifiers="0" signal="clicked"/>
 		</widget>
 		<packing>
 		  <property name="expand">False</property>

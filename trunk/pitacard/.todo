@@ -26,6 +26,9 @@
     <note priority="medium" time="1144753406" done="1145198750">
         make sure we don't try to run a review with an empty deck as it will abort. We need to manage our controls such that it can't happen.
     </note>
+    <note priority="medium" time="1144761662" done="1145620098">
+        Look into signals_autoconnect. As in snakememory, it looks like there's a more automatic way to connect signals
+    </note>
     <note priority="medium" time="1145192516" done="1145196222">
         create user-script
     </note>
@@ -38,10 +41,16 @@
     <note priority="medium" time="1145582797" done="1145587346">
         update sourceforge page
     </note>
+    <note priority="medium" time="1145582804" done="1145620086">
+        update freshmeat entry
+        <note priority="medium" time="1145587362" done="0">
+            make sure all changes to freshmeat page are updated
+        </note>
+    </note>
     <note priority="medium" time="1144598057">
         consider support for adding sounds, images, etc. to cards
     </note>
-    <note priority="medium" time="1144753117">
+    <note priority="medium" time="1144753117" done="1145764727">
         add menu items for card commands (add, edit, delete). Perhaps the gtk 'Action' system.
     </note>
     <note priority="medium" time="1144753215">
@@ -52,9 +61,6 @@
     </note>
     <note priority="medium" time="1144753687">
         implement some more reasonable default sizing for the windows
-    </note>
-    <note priority="medium" time="1144761662">
-        Look into signals_autoconnect. As in snakememory, it looks like there's a more automatic way to connect signals
     </note>
     <note priority="medium" time="1145413039">
         focus card list on newly added cards
@@ -67,12 +73,6 @@
     </note>
     <note priority="medium" time="1145582782">
         improve the INSTALL file (prefix info, etc.). Perhaps just find a good one from another python project and install it
-    </note>
-    <note priority="medium" time="1145582804">
-        update freshmeat entry
-        <note priority="medium" time="1145587362">
-            make sure all changes to freshmeat page are updated
-        </note>
     </note>
     <note priority="medium" time="1145582929">
         write some docs on basic usage, config file, command line, etc.

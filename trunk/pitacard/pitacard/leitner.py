@@ -27,9 +27,8 @@ class Leitner:
     def __init__(self, gladefile, cards, bins=10):
         assert len(cards) > 0, 'No cards in deck supplier to Leitner review'
         
-        self.bins = [ [] for idx in range(bins) ]
-        for card in cards:
-            self.bins[card[model.BIN_IDX]].append(card)
+        self.cards = cards
+        self.num_bins = bins
 
         xml = gtk.glade.XML(gladefile, 'ReviewDlg')
         self.dlg = xml.get_widget('ReviewDlg')
@@ -39,7 +38,9 @@ class Leitner:
         self.front_text = xml.get_widget('front_text')
         self.back_text = xml.get_widget('back_text')
 
-        if len(cards) < 1: self.next_button.set_sensitive(False)
+        self.dlg.resize(500,500)
+
+        if len(self.cards) < 1: self.next_button.set_sensitive(False)
         self.correct_button.set_sensitive(False)
         self.wrong_button.set_sensitive(False)
 
@@ -78,52 +79,37 @@ class Leitner:
         self.next_button.set_sensitive(True)
 
     def have_cards(self):
-        for bin in self.bins:
-            if len(bin) > 0: return True
-        return False
+        return len(self.cards) > 0
+
+    def bin_value(self, bin):
+        assert bin in range(self.num_bins), 'bin %d not in range (0,%d)' % (bin,self.num_bins)
+        inv = self.num_bins - bin
+        return 2**inv
 
     def get_next_card(self):
-        assert self.have_cards(), 'No cards available'
+        # count cards w/ values
+        sum = 0
+        for card in self.cards:
+            sum += self.bin_value(card[model.BIN_IDX])
+            
+        # rand in that range
+        count = random.randint(0, sum - 1)
         
-        bin = self.get_bin()
-        assert bin < len(self.bins), 'Bin out of range'
-        while len(self.bins[bin]) < 1:
-            bin = self.get_bin()
-        assert len(self.bins[bin]) > 0, 'Bin has no cards'
-        
-        card_idx = random.randint(0, len(self.bins[bin]) - 1)
-        return self.bins[bin][card_idx]
+        # index into cards
+        idx = 0
+        bin_value = self.bin_value(self.cards[idx][model.BIN_IDX])
+        while count - bin_value > 0:
+            count -= bin_value
+            idx += 1
+            bin_value = self.bin_value(self.cards[idx][model.BIN_IDX])
+
+        return self.cards[idx]
 
     def update_card(self, card, correct):
-        old_bin = card[model.BIN_IDX]
         if correct:
-            new_bin = old_bin + 1
+            new_bin = min(self.num_bins - 1,
+                          card[model.BIN_IDX] + 1)
         else:
             new_bin = 0
 
-        if new_bin >= len(self.bins):
-            new_bin = len(self.bins) - 1
-        
-        self.bins[old_bin].remove(card)
         card[model.BIN_IDX] = new_bin
-        self.bins[new_bin].append(card)
-
-class Leitner_log2(Leitner):
-    def __init__(self, gladefile, model, bins=10):
-        Leitner.__init__(self, gladefile, model, bins)
-
-    def get_bin(self):
-        """
-        This calculates a new bin using a log2
-        scale. That is, the likelihood that a bin
-        will be chosen is equal to the sum of the likelihoods
-        for higher-numbered bins.
-        """
-        num_bins = len(self.bins)
-        inv = floor(log(random.randint(1,2**num_bins - 1),
-                       2))
-        bin = (num_bins - 1) - inv
-        return int(bin)
-
-
-               
