@@ -41,6 +41,9 @@
     <note priority="medium" time="1145412999" done="1145443817">
         new card editing should put input focus on 'front' edit
     </note>
+    <note priority="medium" time="1145413039" done="1146401435">
+        focus card list on newly added cards
+    </note>
     <note priority="medium" time="1145582790" done="1145587345">
         update web site
     </note>
@@ -53,9 +56,6 @@
             make sure all changes to freshmeat page are updated
         </note>
     </note>
-    <note priority="medium" time="1144598057">
-        consider support for adding sounds, images, etc. to cards
-    </note>
     <note priority="medium" time="1144753215">
         add support for front, back, and mix review sessions
     </note>
@@ -65,11 +65,11 @@
     <note priority="medium" time="1144753687">
         implement some more reasonable default sizing for the windows
     </note>
-    <note priority="medium" time="1145413039" done="1146401435">
-        focus card list on newly added cards
-    </note>
     <note priority="medium" time="1145415286">
         print only first line of front/back in list view for multi-line entries
+        <note priority="low" time="1146402021">
+            This is basically fixed using the 'set_fixed_height_from_font' call, but we can still see the tops of the lower lines...so, when you have time, look into making this really work
+        </note>
     </note>
     <note priority="medium" time="1145444319">
         save_file_mgr.open should check that a file exists before opening it (or should it?)
@@ -80,7 +80,10 @@
     <note priority="medium" time="1145582929">
         write some docs on basic usage, config file, command line, etc.
     </note>
-    <note priority="medium" time="1145840198">
+    <note priority="medium" time="1145840198" done="1146402159">
         delete key should delete the selected card
+    </note>
+    <note priority="low" time="1144598057">
+        consider support for adding sounds, images, etc. to cards
     </note>
 </todo>

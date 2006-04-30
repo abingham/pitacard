@@ -101,6 +101,7 @@ class UI(SaveFileMgr):
 
         col = gtk.TreeViewColumn('Front')
         cell = gtk.CellRendererText()
+        cell.set_fixed_height_from_font(1)
         col.pack_start(cell, True)
         col.add_attribute(cell, 'text', FRONT_IDX)
         col.set_sort_column_id(FRONT_IDX)
@@ -108,6 +109,7 @@ class UI(SaveFileMgr):
 
         col = gtk.TreeViewColumn('Back')
         cell = gtk.CellRendererText()
+        cell.set_fixed_height_from_font(1)
         col.pack_start(cell, True)
         col.add_attribute(cell, 'text', BACK_IDX)
         col.set_sort_column_id(BACK_IDX)
