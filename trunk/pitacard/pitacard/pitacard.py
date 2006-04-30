@@ -168,6 +168,8 @@ class UI(SaveFileMgr):
         back = get_text(back_buffer)
         dlg.destroy()
 
+        if not response == gtk.RESPONSE_OK: return
+
         self.card_list.get_model().append([bin,
                                            front,
                                            back])

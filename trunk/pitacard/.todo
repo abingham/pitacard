@@ -23,6 +23,9 @@
     <note priority="medium" time="1144753081" done="1145192946">
         add keyboard shortcuts for reviewing. Perhaps ctrl+n, ctrl+c, ctrl+w or something
     </note>
+    <note priority="medium" time="1144753117" done="1145764727">
+        add menu items for card commands (add, edit, delete). Perhaps the gtk 'Action' system.
+    </note>
     <note priority="medium" time="1144753406" done="1145198750">
         make sure we don't try to run a review with an empty deck as it will abort. We need to manage our controls such that it can't happen.
     </note>
@@ -47,11 +50,11 @@
             make sure all changes to freshmeat page are updated
         </note>
     </note>
+    <note priority="high" time="1145841644" done="1146400807">
+        it looks like pressing cancel while creating a card actually creates a card anyway
+    </note>
     <note priority="medium" time="1144598057">
         consider support for adding sounds, images, etc. to cards
-    </note>
-    <note priority="medium" time="1144753117" done="1145764727">
-        add menu items for card commands (add, edit, delete). Perhaps the gtk 'Action' system.
     </note>
     <note priority="medium" time="1144753215">
         add support for front, back, and mix review sessions
@@ -76,5 +79,8 @@
     </note>
     <note priority="medium" time="1145582929">
         write some docs on basic usage, config file, command line, etc.
+    </note>
+    <note priority="medium" time="1145840198">
+        delete key should delete the selected card
     </note>
 </todo>
