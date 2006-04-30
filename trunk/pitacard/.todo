@@ -2,6 +2,9 @@
     <note priority="veryhigh" time="1145012266" done="1145191359">
         When you get a card wrong, it should go bin 0, not 1
     </note>
+    <note priority="high" time="1145841644" done="1146400807">
+        it looks like pressing cancel while creating a card actually creates a card anyway
+    </note>
     <note priority="medium" time="1144598012" done="1144753696">
         implement Leitner review system
     </note>
@@ -50,9 +53,6 @@
             make sure all changes to freshmeat page are updated
         </note>
     </note>
-    <note priority="high" time="1145841644" done="1146400807">
-        it looks like pressing cancel while creating a card actually creates a card anyway
-    </note>
     <note priority="medium" time="1144598057">
         consider support for adding sounds, images, etc. to cards
     </note>
@@ -65,7 +65,7 @@
     <note priority="medium" time="1144753687">
         implement some more reasonable default sizing for the windows
     </note>
-    <note priority="medium" time="1145413039">
+    <note priority="medium" time="1145413039" done="1146401435">
         focus card list on newly added cards
     </note>
     <note priority="medium" time="1145415286">

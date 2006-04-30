@@ -170,9 +170,11 @@ class UI(SaveFileMgr):
 
         if not response == gtk.RESPONSE_OK: return
 
-        self.card_list.get_model().append([bin,
-                                           front,
-                                           back])
+        model = self.card_list.get_model()
+        iter = model.append([bin,
+                             front,
+                             back])
+        self.card_list.set_cursor(model.get_path(iter))
 
     def edit_selected_card(self):
         sel = self.card_list.get_selection()
