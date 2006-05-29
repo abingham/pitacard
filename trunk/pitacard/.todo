@@ -56,6 +56,12 @@
             make sure all changes to freshmeat page are updated
         </note>
     </note>
+    <note priority="medium" time="1145840198" done="1146402159">
+        delete key should delete the selected card
+    </note>
+    <note priority="high" time="1147349420">
+        why doesn't File -&gt; New work? Make it work
+    </note>
     <note priority="medium" time="1144753215">
         add support for front, back, and mix review sessions
     </note>
@@ -80,8 +86,8 @@
     <note priority="medium" time="1145582929">
         write some docs on basic usage, config file, command line, etc.
     </note>
-    <note priority="medium" time="1145840198" done="1146402159">
-        delete key should delete the selected card
+    <note priority="medium" time="1148908333">
+        Card editor dialog should wrap text rather than extend scroll thumb.
     </note>
     <note priority="low" time="1144598057">
         consider support for adding sounds, images, etc. to cards

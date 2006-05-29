@@ -10,3 +10,5 @@ pitacard/pitacard.py
 pitacard/save_file_mgr.py
 pitacard/glade/pitacard.glade
 scripts/pitacard
+doc/manual.txt
+doc/SAMPLE.pitacardrc
