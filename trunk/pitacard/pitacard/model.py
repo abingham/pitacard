@@ -1,9 +1,9 @@
 # pitacard: A Leitner-method flashcard program
 # Copyright (C) 2006 Austin Bingham, Nate Ross
 #
-# This program is free software# you can redistribute it and/or
+# This program is free software you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
-# as published by the Free Software Foundation# either version 2
+# as published by the Free Software Foundation either version 2
 # of the License, or (at your option) any later version.
 #
 # This program is distributed in the hope that it will be useful,
@@ -35,7 +35,7 @@ def new_model():
 			 str) # type
 
 NAME_PIDX = 0		#name
-CARDNUM_PIDX = 1		#cardnum.
+CARDNUM_PIDX = 1	#cardnum.
 TYPE_I_PIDX = 2 	#options for irreversable cards.
 TYPE_R_PIDX = 3 	#options for reversable cards.
 TYPE_N_PIDX = 4 	#options for notes. 
