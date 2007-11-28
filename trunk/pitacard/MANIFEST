@@ -16,6 +16,7 @@ pitacard/review.py
 pitacard/save_file_mgr.py
 pitacard/stackio.py
 pitacard/glade/pitacard.glade
+pitacard/glade/pita.jpg
 scripts/pitacard
 doc/manual.txt
 doc/SAMPLE.pitacardrc
