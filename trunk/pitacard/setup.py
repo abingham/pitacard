@@ -4,7 +4,7 @@ from distutils.core import setup
 import os
 
 setup(name='pitacard',
-      version='0.8',
+      version='0.9',
       description='Leitner-method flash card system',
       author='Austin Bingham',
       author_email='austin.bingham@gmail.com',

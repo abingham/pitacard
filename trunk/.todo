@@ -1,0 +1,5 @@
+<todo version="0.1.19">
+    <note priority="medium" time="1196294478">
+        change "bin" editor from a selection list to a spinner
+    </note>
+</todo>
