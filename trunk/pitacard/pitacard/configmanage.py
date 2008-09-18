@@ -19,7 +19,7 @@
 #     austin.bingham@gmail.com
 #     teal@mailshack.com
 
-from os import mknod, access, path
+from os import access, path
 from string import lower
 from copy import deepcopy
 import shutil
@@ -207,8 +207,7 @@ class ConfigTool(SafeConfigParser):
                 permissions = ''
             else:
                 try:
-                    mknod(configfile)
-                    open(configfile, 'r+').close()
+                    open(configfile, 'w').close()
                     error = error + str('Successfully created Config file at ' + configfile)
                     permissions = 'r+'
                 except:
