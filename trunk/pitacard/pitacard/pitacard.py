@@ -22,22 +22,20 @@
 import gtk, gtk.glade
 import stackio, csvio
 import review, options, configmanage
-from save_file_mgr import *
+from save_file_manager import *
 from model import *
 
 def get_text(buffer):
     return buffer.get_text(buffer.get_start_iter(),
                            buffer.get_end_iter())
 
-class UI(SaveFileMgr):
+class UI:
 
     def delete_event(self, widget, event, data=None):
             self.quit()
             return True
 
     def __init__(self, gladefile, config):
-        SaveFileMgr.__init__(self)
-        
         self.config = config
         self.profmodel = new_profile_model()
 
@@ -46,6 +44,12 @@ class UI(SaveFileMgr):
 
         self.main_window = self.xml.get_widget('MainWindow')
         self.main_window.connect("delete_event", self.delete_event)
+
+        self.save_file_mgr = SaveFileMgr(self.main_window,
+                                         self.new_handler,
+                                         self.open_handler,
+                                         self.save_handler)
+        self.save_file_mgr.add_format('pitacard', '.pitacard', 0)
         
         if self.config.readvalue('startup', 'preservegeom') == 'true':
             self.main_window.resize(int(self.config.readvalue('startup', 'lastwidth')), int(self.config.readvalue('startup', 'lastheight')))
@@ -99,13 +103,13 @@ class UI(SaveFileMgr):
             'on_do_review_button_clicked' :
             lambda x: self.do_review(),
             'on_save_menu_activate' :
-            lambda x: self.save(),
+            lambda x: self.save_file_mgr.save(),
             'on_save_as_menu_activate' :
-            lambda x: self.save_as(),
+            lambda x: self.save_file_mgr.save_as(),
             'on_new_menu_activate':
-            lambda x: self.new(),
+            lambda x: self.save_file_mgr.new(),
             'on_open_menu_activate' :
-            lambda x: self.open(),
+            lambda x: self.save_file_mgr.open(),
             'on_quit_menu_activate' :
             lambda x: self.quit(),
             'on_card_list_row_activated' :
@@ -114,7 +118,7 @@ class UI(SaveFileMgr):
             lambda x: self.sync_ui()
             })
 
-    def new_impl(self):
+    def new_handler(self):
         self.profmodel.clear()
         self.card_list.get_model().clear()
         self.connect_model()
@@ -122,24 +126,15 @@ class UI(SaveFileMgr):
         self.sync_ui()
         return SaveFileMgr.OK
 
-    def save_impl(self, filename):
-        if self.saveformat == "stack":
-            stackio.save(filename, self.card_list.get_model(), self.profmodel)
-        elif self.saveformat == "csv":
-            csvio.save(filename, self.card_list.get_model(), self.profmodel)
-        elif self.saveformat == "csv (compatibility mode)":
-            csvio.compatibilitysave(filename, self.card_list.get_model())
-        self.status_filename.set_label(filename.split("/")[-1])
+    def save_handler(self, filename):
+        stackio.save(filename, self.card_list.get_model(), self.profmodel)
+        self.sync_ui()
         return SaveFileMgr.OK
 
-    def open_impl(self, filename):
-        if self.saveformat == "stack":
-            self.profmodel, model = stackio.load(filename)
-        elif self.saveformat == "csv" or self.saveformat == "csv (compatibility mode)":
-            self.profmodel, model = csvio.load(filename)
+    def open_handler(self, filename):
+        self.profmodel, model = stackio.load(filename)
         self.card_list.set_model(model)
         self.connect_model()
-        self.status_filename.set_label(filename.split("/")[-1])
         self.sync_ui()
         return SaveFileMgr.OK
         
@@ -213,8 +208,15 @@ class UI(SaveFileMgr):
         self.edit_card_menu.set_sensitive(have_selected)
         self.delete_card_menu.set_sensitive(have_selected)
 
+        if self.save_file_mgr.filename:
+            self.status_filename.set_label(self.save_file_mgr.filename.split("/")[-1])
+        else:
+            self.status_filename.set_label('')
+
+        # TODO: set window title, with indicator if there are unsaved changes
+
     def deck_changed(self):
-        self.flag_change()
+        self.save_file_mgr.flag_change()
         self.sync_ui()
 
     def front_edited(self, cell, path, new_text):
@@ -406,3 +408,8 @@ class UI(SaveFileMgr):
                             self.config,
                             self.card_list.get_model(),
 			    profile)
+
+    def quit(self):
+        rslt = self.save_file_mgr.quit()
+        if not SaveFileMgr.CANCEL == rslt:
+            gtk.main_quit()
