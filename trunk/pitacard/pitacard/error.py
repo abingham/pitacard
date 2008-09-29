@@ -22,6 +22,16 @@
 import gtk
 from os import access
 
+def error(msg, parent):
+    dlg = gtk.MessageDialog(None,
+                            False,
+                            gtk.MESSAGE_ERROR,
+                            gtk.BUTTONS_CLOSE,
+                            msg)
+    dlg.set_transient_for(parent)
+    dlg.run()
+    dlg.destroy()
+
 def cant_access(checkpath, accesstype=4, parent=None, custom_message=None):
     '''Can be used to check if a file exists or check a file's permissions for a specific kind of access and giving an error message if not.
        Access kind can be given in text or Posix number variant.
