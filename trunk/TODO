@@ -1,1 +1,5 @@
 * add "recent files" to file menu
+* Display name of current deck in titlebar
+* if prompted to save on exit and you select "yes", the program doesn't exit
+* pressing return ought to save the card being edited
+* save manager isn't properly disabling menu items
