@@ -22,7 +22,7 @@
 import gtk, gtk.glade
 import stackio, csvio
 import review, options, configmanage
-from save_file_manager import *
+from save_file_mgr import *
 from model import *
 
 def get_text(buffer):
