@@ -1,3 +1,5 @@
+* startup-settings isn't working. Revisit this entire thing...it seems wonky.
+* revisit entire options/config system
 * add "recent files" to file menu
 * stackio.save is not currently returning errors, so save_handler can't
   report anything other than success...

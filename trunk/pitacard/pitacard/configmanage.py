@@ -54,8 +54,13 @@ class ConfigTool(SafeConfigParser):
             2.b. If not, nothing happens. A warning is given to the effect that config wasn't written.'''
 
     valid_config = {'startup': [
-                        #these are enforced options. Options that are not recognized will not be deleted. Not just out of courtesy, but because it can be useful (for example, in the favorites section), but options which are known to exist are created if non-existant, given a default value when created if possible,
-                        #option's name, default value, possible values
+                        # these are enforced options. Options that are
+                        # not recognized will not be deleted. Not just
+                        # out of courtesy, but because it can be
+                        # useful but options which are known to exist
+                        # are created if non-existant, given a default
+                        # value when created if possible, option's
+                        # name, default value, possible values
                         ('preservegeom', 'true', ['true', 'false']),
                         ('usefile', 'custom', ['none', 'last', 'custom']),
                         ('lastfile', ''),
@@ -70,8 +75,6 @@ class ConfigTool(SafeConfigParser):
                         ('rvwlastwidth', '500', int),
                         ('rvwlastposx', '480', int),
                         ('rvwlastposy', '140', int)
-                        ],
-                    'bookmarks': [
                         ]
                     }
 
@@ -138,11 +141,11 @@ class ConfigTool(SafeConfigParser):
 
     def readvalue(self, section='*', option='*'):
         '''Reads value(s) from the parser, returns value.
-            If section == '*', irrelevant of what option is, all options from every section are returned in the form of dictionaries within a master dictionary. Such as:
-            {'Clothes': {'shirt': 'blue', 'pants': 'red', 'socks': 'purple'}, 'House': {'walls': 'turquoise', 'roof': 'fuschia'}}
-            If section is absolute and option == '*', all options and their corresponding values from the section are returned in the form of a dictionary, such as:
-            {'shirt': 'blue', 'pants': 'red', 'socks': 'purple' }
-            if sectiona and option are absolute, only the value of the option is returned.'''
+        If section == '*', irrelevant of what option is, all options from every section are returned in the form of dictionaries within a master dictionary. Such as:
+        {'Clothes': {'shirt': 'blue', 'pants': 'red', 'socks': 'purple'}, 'House': {'walls': 'turquoise', 'roof': 'fuschia'}}
+        If section is absolute and option == '*', all options and their corresponding values from the section are returned in the form of a dictionary, such as:
+        {'shirt': 'blue', 'pants': 'red', 'socks': 'purple' }
+        if sectiona and option are absolute, only the value of the option is returned.'''
         if section == '*':
             optionsdict = {}
             for section in self.sections():
@@ -231,12 +234,20 @@ class ConfigTool(SafeConfigParser):
             return permissions
 
 class StartupSettings:
-    '''this is very integrated with the parent app and uses the open tool, config instance, gladefile, and window of the given parent UI instance. If the UI is fundamentally changed in any of these, this part probably needs to be changed. Don't worry, all variable grabbing from the parent is done in the first few lines. If necessary, all of these variables might be stretched as a long list of arguments, but it seems a bit excessive. This class already makes assumptions about the parent, and to pretend it is modular is pointless. The only possible value is to have the variables being used cosolidated on the pitacard.py script.'''
+    '''this is very integrated with the parent app and uses the open
+    tool, config instance, gladefile, and window of the given parent
+    UI instance. If the UI is fundamentally changed in any of these,
+    this part probably needs to be changed. Don't worry, all variable
+    grabbing from the parent is done in the first few lines. If
+    necessary, all of these variables might be stretched as a long
+    list of arguments, but it seems a bit excessive. This class
+    already makes assumptions about the parent, and to pretend it is
+    modular is pointless. The only possible value is to have the
+    variables being used cosolidated on the pitacard.py script.'''
     def __init__(self, parent):
         self.config = parent.config
         self.cfgtemp = deepcopy(self.config)
         self.gladefile = parent.gladefile
-        self.open = parent.open
         lowerstr = (lambda x: lower(str(x)))
 
         xml = gtk.glade.XML(self.gladefile, 'ConfigDlg')
@@ -299,8 +310,22 @@ class StartupSettings:
         self.cfgtemp.writevalue({'startup': {'usefile':  selection}})
 
     def selector(self):
-        getpath = self.open(None, False)
-        self.window.custfile_entry.set_text(getpath)
+        # getpath = self.open(None, False)
+        dlg = gtk.FileChooserDialog('Open',
+                                    None,
+                                    gtk.FILE_CHOOSER_ACTION_OPEN,
+                                    (gtk.STOCK_CANCEL,
+                                     gtk.RESPONSE_CANCEL,
+                                     gtk.STOCK_OK,
+                                     gtk.RESPONSE_OK))
+            
+        dlg.set_transient_for(self.window)
+        rslt = dlg.run()
+        filename = dlg.get_filename()
+        dlg.destroy()
+
+        if gtk.RESPONSE_OK == rslt:
+            self.window.custfile_entry.set_text(filename)
 
     def checkvalid(self):
         givenpath = self.window.custfile_entry.get_text()
@@ -319,90 +344,5 @@ class StartupSettings:
             for section in self.cfgtemp.sections():
                 for option in self.cfgtemp.options(section):
                     self.config.set(section, option, self.cfgtemp.get(section, option))
-        self.window.destroy()
-        del self
-
-class BookmarkEditor:
-    '''this is very integrated with the parent app and uses the open tool, config instance, gladefile, and window of the given parent UI instance. If the UI is fundamentally changed in any of these, this part probably needs to be changed. Don't worry, all variable grabbing from the parent is done in the first few lines. If necessary, all of these variables might be stretched as a long list of arguments, but it seems a bit excessive. This class already makes assumptions about the parent, and to pretend it is modular is pointless. The only possible value is to have the variables being used cosolidated on the pitacard.py script.'''
-    NAME_KEY = 0
-    PATH_KEY = 1
-    def __init__(self, parent, bookmarkname, bookmarkpath):
-
-        self.config = parent.config
-        self.gladefile = parent.gladefile
-        self.formats = parent.saveformats
-        self.open = parent.open
-
-        self.bookmark = {}
-        self.isvalid = {}
-        self.oldbookmarkname = bookmarkname                #used to delete the original bookmark later.
-        self.bookmark[self.NAME_KEY] = bookmarkname     #these are the values used to store the information currently in the entry boxes.
-        self.bookmark[self.PATH_KEY] = bookmarkpath
-        self.isvalid[self.NAME_KEY] = False             #these are the values used to store whether the current entered values can be used for a bookmark or not.
-        self.isvalid[self.PATH_KEY] = False
-
-        xml = gtk.glade.XML(self.gladefile, 'Edit Bookmark')
-        self.window = xml.get_widget('Edit Bookmark')
-        self.window.set_transient_for(parent.main_window)
-
-        self.window.name_entry = xml.get_widget('EditBookmark - Name - Entry')
-        self.window.path_header = xml.get_widget('EditBookmark - Path - Header')
-        self.window.path_entry = xml.get_widget('EditBookmark - Path - Entry')
-        self.window.path_selector = xml.get_widget('EditBookmark - Path - Selector')
-        self.window.okay = xml.get_widget('EditBookmark - OK')
-        self.window.cancel = xml.get_widget('EditBookmark - Cancel')
-
-        self.window.name_entry.connect('changed', lambda w: self.checknamevalid())
-        self.window.path_entry.connect('changed', lambda w: self.checkpathvalid())
-        self.window.path_selector.connect('clicked', lambda w: self.selector())
-        self.window.okay.connect('clicked', lambda w: self.close(True))
-        self.window.cancel.connect('clicked', lambda w: self.close(False))
-
-        self.window.name_entry.set_text(self.bookmark[self.NAME_KEY])
-        self.window.path_entry.set_text(self.bookmark[self.PATH_KEY])
-
-    def selector(self):
-        getpath = self.open(None, False)
-        self.window.path_entry.set_text(getpath)
-
-    def checknamevalid(self):
-        l = self.NAME_KEY
-        self.bookmark[l] = self.window.name_entry.get_text()
-        if self.bookmark[l] == '':
-            self.isvalid[l] = False
-        else:
-            self.isvalid[l] = True
-        self.set_sensitivity()
-
-    def checkpathvalid(self):
-        l = self.PATH_KEY
-        self.bookmark[l] = self.window.path_entry.get_text()
-        self.isvalid[l] = False
-        if self.bookmark[l] == '':
-            self.window.path_header.set_markup('<b>Path to file <span color="#FF0000">(Invalid!)</span></b>')
-        elif not access(self.bookmark[l], 0):
-            self.window.path_header.set_markup('<b>Path to file <span color="#FF0000">(Invalid!)</span></b>')
-        elif not '.' + self.bookmark[l].split('.')[-1] in [ x[1] for x in self.formats ]:
-            self.window.path_header.set_markup('<b>Path to file <span color="#FF0000">(Bad file type)</span></b>')
-        elif not access(self.bookmark[l], 4):
-            self.window.path_header.set_markup('<b>Path to file <span color="#FF0000">(No read access!)</span></b>')
-        else:
-            self.window.path_header.set_markup('<b>Path to file <span color="#009900">(Valid)</span></b>')
-            self.isvalid[l] = True
-        self.set_sensitivity()
-
-    def set_sensitivity(self):
-        if False in self.isvalid.values():
-            self.window.okay.set_property('sensitive', False)
-        else:
-            self.window.okay.set_property('sensitive', True)
-
-    def close(self, bool):
-        if bool == True:
-            try:
-                self.config.writevalue({'bookmarks' : {self.oldbookmarkname : 'del'}})
-            except:
-                pass
-            self.config.writevalue({'bookmarks' : {self.bookmark[self.NAME_KEY] : self.bookmark[self.PATH_KEY]}})
         self.window.destroy()
         del self

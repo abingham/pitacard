@@ -22,7 +22,7 @@
 import os.path
 import gtk, gtk.glade
 import stackio, csvio
-import review, options, configmanage
+import review, options
 from save_file_mgr import *
 from model import *
 
@@ -70,8 +70,6 @@ class UI:
         self.delete_card_menu = self.xml.get_widget('delete_card_menu')
         self.review_menu = self.xml.get_widget('review_menu')
 
-        self.bookmarks_list = self.xml.get_widget('bookmarks_menu')
-        self.sync_bookmarks()
         self.status_filename = self.xml.get_widget('MainWindow - Status - Filename')
         self.status_cardcount = self.xml.get_widget('MainWindow - Status - Cardcount')
 
@@ -80,14 +78,6 @@ class UI:
             lambda x: self.gpldisplay(),
             'on_about_activate' :
             lambda x: self.about(),
-            'on_startup_settings_activate':
-            lambda x: self.startup_settings(),
-            'on_do_options_button_clicked' :
-            lambda x: self.options(),
-            'on_options_menu_activate' :
-            lambda x: self.options(),
-            #'on_fav_menu_activate' :
-            ###lambda x: self.addfav(),
             'on_add_card_button_clicked' :
             lambda x: self.add_card(),
             'on_add_card_menu_activate' :
@@ -120,11 +110,12 @@ class UI:
             lambda x: self.sync_ui()
             })
 
+        self.sync_ui()
+
     def new_handler(self):
         self.profmodel.clear()
         self.card_list.get_model().clear()
         self.connect_model()
-        self.status_filename.set_label('Unsaved')
         return SaveFileMgr.OK
 
     def save_handler(self, filename):
@@ -208,16 +199,14 @@ class UI:
         self.delete_card_menu.set_sensitive(have_selected)
 
         if self.save_file_mgr.filename:
-            self.status_filename.set_label(self.save_file_mgr.filename.split("/")[-1])
+            file_status = os.path.basename(self.save_file_mgr.filename)
         else:
-            self.status_filename.set_label('')
+            file_status = ''
 
-        title = 'PitaCard'
-        if self.save_file_mgr.filename:
-            title += ' - %s' % os.path.basename(self.save_file_mgr.filename)
         if self.save_file_mgr.unsaved_changes:
-            title += '*'
-        self.main_window.set_title(title)
+            file_status += ' [unsaved]'
+
+        self.status_filename.set_label(file_status.strip())
 
     #def deck_changed(self):
     #    self.save_file_mgr.flag_change()
@@ -242,79 +231,7 @@ class UI:
         dlg.set_transient_for(self.main_window)
         dlg.run()
         dlg.destroy()
-
-    def startup_settings(self):
-        settings_window = configmanage.StartupSettings(self)
-
-    def options(self):
-        opt_window = options.OptGUI(self.main_window, self.gladefile,
-                                        self.profmodel)
-
-    def sync_bookmarks(self):
-        for d in self.bookmarks_list.get_children():
-            self.bookmarks_list.remove(d)
-            del d
-        addbookmark = gtk.MenuItem('_Add Bookmark', True)
-        addbookmark.connect('activate', self.addfav)
-        separator = gtk.SeparatorMenuItem()
-        self.bookmarks_list.append(addbookmark)
-        self.bookmarks_list.append(separator)
-        addbookmark.show()
-        separator.show()
-
-        newbookmarks = self.config.readvalue('bookmarks')
-        if len(newbookmarks)>0:
-            i=0
-            self.leafmenuitem = {}
-            for leaf in newbookmarks:
-                
-                #make menu item.
-                self.leafmenuitem[i] = gtk.MenuItem(leaf, False)
-                self.leafmenuitem[i].path = newbookmarks[leaf]
-                self.leafmenuitem[i].num = 0    #this number is used to count selections. One selection, that is, moving the mouse over an object, does nothing, but the second, which can only occur with a click, opens the favorite.
-                self.leafmenuitem[i].connect('select', self.fav_select)
-                self.leafmenuitem[i].connect('deselect', self.fav_deselect)
-                self.bookmarks_list.append(self.leafmenuitem[i])
-                self.leafmenuitem[i].show()
-
-                #submenu
-                submenu = gtk.Menu()
-                editthis = gtk.MenuItem('edit bookmark', False)
-                deletethis = gtk.MenuItem('delete bookmark', False)
-                editthis.connect_object('activate', self.editfav, self.leafmenuitem[i])
-                deletethis.connect_object('activate', self.delfav, self.leafmenuitem[i])
-                submenu.append(editthis)
-                submenu.append(deletethis)
-                editthis.show()
-                deletethis.show()
-                self.leafmenuitem[i].set_submenu(submenu)
-                i +=1
-
-    def fav_select(self, favorite):
-        try:
-            str(favorite.num)
-        except:
-            favorite.num = 0
-        favorite.num +=1
-        if favorite.num == 2:
-            self.open(favorite.path)
-            
-    def fav_deselect(self, favorite):
-        favorite.num = 0
-
-    def editfav(self, favorite):
-       bookmark_window = configmanage.BookmarkEditor(self, favorite.get_child().get_label(), favorite.path)
-       bookmark_window.window.connect('destroy', lambda w: self.sync_bookmarks())
-
-    def addfav(self, junkobject=None):
-        if self.filename != None:
-            bookmark_window = configmanage.BookmarkEditor(self, self.filename.split("/")[-1], self.filename)
-            bookmark_window.window.connect('destroy', lambda w: self.sync_bookmarks())
-
-    def delfav(self, favorite):
-        self.config.writevalue({'bookmarks':{favorite.get_child().get_label(): 'del'}})
-        self.sync_bookmarks()
-
+        
     def add_card(self):
         xml = gtk.glade.XML(self.gladefile, 'CardEditorDlg')
         dlg = xml.get_widget('CardEditorDlg')
