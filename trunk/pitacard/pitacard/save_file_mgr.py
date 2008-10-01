@@ -99,8 +99,8 @@ class SaveFileMgr:
             dlg.set_transient_for(self.parent_window)
             if self.format:
                 savefilter = gtk.FileFilter()
-                savefilter.add_pattern('*%s' % format[1]),
-                savefilter.set_name(format[0])
+                savefilter.add_pattern('*%s' % self.format[1]),
+                savefilter.set_name(self.format[0])
                 dlg.add_filter(savefilter) 
                 
             while True:

@@ -172,16 +172,16 @@ class UI:
         self.card_list.append_column(col)        
 
         self.card_list.set_model(new_model())
-        # self.connect_model()
+        self.connect_model()
 
     def connect_model(self):
         model = self.card_list.get_model()
         model.connect('row-changed',
-                      lambda m,p,i: self.save_file_manager.flag_change())
+                      lambda m,p,i: self.save_file_mgr.flag_change())
         model.connect('row-deleted',
-                      lambda m,p: self.save_file_manager.flag_change())
+                      lambda m,p: self.save_file_mgr.flag_change())
         model.connect('row-inserted',
-                      lambda m,p,i: self.save_file_manager.flag_change())
+                      lambda m,p,i: self.save_file_mgr.flag_change())
 
     def sync_ui(self):
         cardlen = len(self.card_list.get_model())
@@ -212,14 +212,12 @@ class UI:
         else:
             self.status_filename.set_label('')
 
+        title = 'PitaCard'
         if self.save_file_mgr.filename:
-            title = 'PitaCard - %s' % os.path.basename(self.save_file_mgr.filename)
-            if self.save_file_mgr.unsaved_changes:
-                title += '*'
-            self.main_window.set_title(title)
-            print title
-
-        # TODO: Disable "File -> Save" if not unsaved changes
+            title += ' - %s' % os.path.basename(self.save_file_mgr.filename)
+        if self.save_file_mgr.unsaved_changes:
+            title += '*'
+        self.main_window.set_title(title)
 
     #def deck_changed(self):
     #    self.save_file_mgr.flag_change()
