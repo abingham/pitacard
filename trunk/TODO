@@ -1,7 +1,14 @@
+* SaveFileMgr needs to signal on changes...it is the only way.
+* pitacard needs to flag changes at all appropriate times:
+  - Card addition
+  - Card deletion
+  - Card edit
+  - on review? Only if things change?
+
 * add "recent files" to file menu
-* Display name of current deck in titlebar
 * if prompted to save on exit and you select "yes", the program doesn't exit
 * pressing return ought to save the card being edited
 * save manager isn't properly disabling menu items
 * query-for-unsaved needs 'cancel' option
-* save_impl has no way to return errors
+* stackio.save is not currently returning errors, so save_handler can't
+  report anything other than success...

@@ -39,11 +39,16 @@ profilefields = [
     ]
 
 cardfields = [
-    #['fieldname', 'type', 'defaultvalue']
-    ['bin',      'int',   '0'       ],
-    ['type',    'text', '\'I\''   ], #A set of escaped quotations are included so that they show up for the SQL query, so its treated as a static string rather than a field to look for.
-    ['front',   'text', '\' \''   ],
-    ['back',   'text', '\' \''   ]
+    # ['fieldname', 'type', 'defaultvalue']
+    ['front', 'text', '\' \''],
+    ['back',  'text', '\' \''],
+    ['bin',   'int',  '0'    ],
+    ['type',  'text', '\'I\''], # A set of escaped quotations are
+                                # included so that they show up for
+                                # the SQL query, so its treated as a
+                                # static string rather than a field to
+                                # look for.
+    
     ]
 
 def get_connection(dbname):

@@ -19,10 +19,11 @@
 #     austin.bingham@gmail.com
 #     teal@mailshack.com
 
+import os.path
 import gtk, gtk.glade
 import stackio, csvio
 import review, options, configmanage
-from save_file_manager import *
+from save_file_mgr import *
 from model import *
 
 def get_text(buffer):
@@ -46,10 +47,10 @@ class UI:
         self.main_window.connect("delete_event", self.delete_event)
 
         self.save_file_mgr = SaveFileMgr(self.main_window,
+                                         ('pitacard stack', '.stack'),
                                          self.new_handler,
                                          self.open_handler,
                                          self.save_handler)
-        self.save_file_mgr.add_format('pitacard', '.pitacard', 0)
         
         if self.config.readvalue('startup', 'preservegeom') == 'true':
             self.main_window.resize(int(self.config.readvalue('startup', 'lastwidth')), int(self.config.readvalue('startup', 'lastheight')))
@@ -141,21 +142,6 @@ class UI:
     def init_card_list(self):
         self.card_list = self.xml.get_widget('card_list')
 
-        col = gtk.TreeViewColumn('Bin')
-        cell = gtk.CellRendererText()
-        col.pack_start(cell, True)
-        col.add_attribute(cell, 'text', BIN_CIDX)
-        col.set_sort_column_id(BIN_CIDX)
-        self.card_list.append_column(col)
-
-        col = gtk.TreeViewColumn('Type')
-        cell = gtk.CellRendererText()
-        #cell.set_property('fontstyle', 'italic')
-        col.pack_start(cell, True)
-        col.add_attribute(cell, 'text', TYPE_CIDX)
-        col.set_sort_column_id(TYPE_CIDX)
-        self.card_list.append_column(col)
-
         col = gtk.TreeViewColumn('Front')
         cell = gtk.CellRendererText()
         cell.set_fixed_height_from_font(1)
@@ -171,6 +157,21 @@ class UI:
         col.add_attribute(cell, 'text', BACK_CIDX)
         col.set_sort_column_id(BACK_CIDX)
         self.card_list.append_column(col)
+
+        col = gtk.TreeViewColumn('Bin')
+        cell = gtk.CellRendererText()
+        col.pack_start(cell, True)
+        col.add_attribute(cell, 'text', BIN_CIDX)
+        col.set_sort_column_id(BIN_CIDX)
+        self.card_list.append_column(col)
+
+        col = gtk.TreeViewColumn('Type')
+        cell = gtk.CellRendererText()
+        #cell.set_property('fontstyle', 'italic')
+        col.pack_start(cell, True)
+        col.add_attribute(cell, 'text', TYPE_CIDX)
+        col.set_sort_column_id(TYPE_CIDX)
+        self.card_list.append_column(col)        
 
         self.card_list.set_model(new_model())
         self.connect_model()
@@ -213,7 +214,12 @@ class UI:
         else:
             self.status_filename.set_label('')
 
-        # TODO: set window title, with indicator if there are unsaved changes
+        if self.save_file_mgr.filename:
+            title = 'PitaCard - %s' % os.path.basename(self.save_file_mgr.filename)
+            if self.save_file_mgr.unsaved_changes:
+                title += '*'
+            self.main_window.set_title(title)
+            print title
 
     def deck_changed(self):
         self.save_file_mgr.flag_change()
@@ -336,11 +342,12 @@ class UI:
         if front == "" and back == "": return
 
         model = self.card_list.get_model()
-        iter = model.append([bin,
-                             cardtype,
-                             front,
-                             back])
+        iter = model.append([front,
+                             back,
+                             bin,
+                             cardtype])
         self.card_list.set_cursor(model.get_path(iter))
+        self.save_file_mgr.flag_change()
 
     def edit_selected_card(self):
         sel = self.card_list.get_selection()

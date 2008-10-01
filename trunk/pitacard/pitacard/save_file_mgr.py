@@ -11,6 +11,7 @@ class SaveFileMgr:
 
     def __init__(self,
                  parent_window,
+                 format=None,
                  new_handler = None,
                  open_handler = None,
                  save_handler = None):
@@ -20,10 +21,7 @@ class SaveFileMgr:
         self.new_handler = new_handler
         self.open_handler = open_handler
         self.save_handler = save_handler
-        self.formats = []
-
-    def add_format(self, name, suffix, id):
-        self.formats.append((name, suffix, id))
+        self.format = format
 
     def flag_change(self):
         self.unsaved_changes = True
@@ -42,7 +40,11 @@ class SaveFileMgr:
         if not rslt == SaveFileMgr.OK:
             return rslt
 
-        return self.new_handler()
+        rslt = self.new_handler()
+        if SaveFileMgr.OK == rslt:
+            self.filename = None
+            self.unsaved_changes = False
+        return rslt
 
     def _save(self, filename):
         if not self.save_handler:
@@ -90,7 +92,7 @@ class SaveFileMgr:
             dlg.set_default_response(1)
             dlg.set_do_overwrite_confirmation(True)
             dlg.set_transient_for(self.parent_window)
-            for format in self.formats:
+            if self.format:
                 savefilter = gtk.FileFilter()
                 savefilter.add_pattern('*%s' % format[1]),
                 savefilter.set_name(format[0])
@@ -101,10 +103,14 @@ class SaveFileMgr:
                 if 0 == response:
                     rslt = SaveFileMgr.CANCEL
                     break
-                if 1 == response:
+
+                elif 1 == response:
                     fname = dlg.get_filename()
-                    if not fname.endswith('.pitacard'):
-                        fname += '.pitacard'
+                    
+                    if self.format:
+                        if not fname.endswith(self.format[1]):
+                            fname += self.format[1]
+
                     rslt = self._save(fname)
                     if SaveFileMgr.OK == rslt:
                         break
@@ -139,10 +145,11 @@ class SaveFileMgr:
                                          gtk.RESPONSE_CANCEL,
                                          gtk.STOCK_OPEN,
                                          gtk.RESPONSE_OK))
-            filter = gtk.FileFilter()
-            for f in self.formats:
-                filter.add_pattern('*%s' % f[1])
-            dlg.set_filter(filter)
+            if self.format:
+                filter = gtk.FileFilter()
+                filter.add_pattern('*%s' % self.format[1])
+                dlg.set_filter(filter)
+
             dlg.set_transient_for(self.parent_window)
             rslt = dlg.run()
             filename = dlg.get_filename()
