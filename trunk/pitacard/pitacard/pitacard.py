@@ -51,6 +51,7 @@ class UI:
                                          self.new_handler,
                                          self.open_handler,
                                          self.save_handler)
+        self.save_file_mgr.change_signal.connect(self.sync_ui)
         
         if self.config.readvalue('startup', 'preservegeom') == 'true':
             self.main_window.resize(int(self.config.readvalue('startup', 'lastwidth')), int(self.config.readvalue('startup', 'lastheight')))
@@ -124,19 +125,16 @@ class UI:
         self.card_list.get_model().clear()
         self.connect_model()
         self.status_filename.set_label('Unsaved')
-        self.sync_ui()
         return SaveFileMgr.OK
 
     def save_handler(self, filename):
         stackio.save(filename, self.card_list.get_model(), self.profmodel)
-        self.sync_ui()
         return SaveFileMgr.OK
 
     def open_handler(self, filename):
         self.profmodel, model = stackio.load(filename)
         self.card_list.set_model(model)
         self.connect_model()
-        self.sync_ui()
         return SaveFileMgr.OK
         
     def init_card_list(self):
@@ -174,16 +172,16 @@ class UI:
         self.card_list.append_column(col)        
 
         self.card_list.set_model(new_model())
-        self.connect_model()
+        # self.connect_model()
 
     def connect_model(self):
         model = self.card_list.get_model()
         model.connect('row-changed',
-                      lambda m,p,i: self.deck_changed())
+                      lambda m,p,i: self.save_file_manager.flag_change())
         model.connect('row-deleted',
-                      lambda m,p: self.deck_changed())
+                      lambda m,p: self.save_file_manager.flag_change())
         model.connect('row-inserted',
-                      lambda m,p,i: self.deck_changed())
+                      lambda m,p,i: self.save_file_manager.flag_change())
 
     def sync_ui(self):
         cardlen = len(self.card_list.get_model())
@@ -221,9 +219,11 @@ class UI:
             self.main_window.set_title(title)
             print title
 
-    def deck_changed(self):
-        self.save_file_mgr.flag_change()
-        self.sync_ui()
+        # TODO: Disable "File -> Save" if not unsaved changes
+
+    #def deck_changed(self):
+    #    self.save_file_mgr.flag_change()
+    #    self.sync_ui()
 
     def front_edited(self, cell, path, new_text):
         self.card_list.get_model()[path][FRONT_CIDX] = new_text
@@ -238,14 +238,12 @@ class UI:
         dlg.run()
         dlg.destroy()
 
-
     def about(self):
         xml = gtk.glade.XML(self.gladefile, 'AboutDlg')
         dlg = xml.get_widget('AboutDlg')
         dlg.set_transient_for(self.main_window)
         dlg.run()
         dlg.destroy()
-
 
     def startup_settings(self):
         settings_window = configmanage.StartupSettings(self)
@@ -347,7 +345,6 @@ class UI:
                              bin,
                              cardtype])
         self.card_list.set_cursor(model.get_path(iter))
-        self.save_file_mgr.flag_change()
 
     def edit_selected_card(self):
         sel = self.card_list.get_selection()

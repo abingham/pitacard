@@ -1,6 +1,6 @@
 import os
 import gtk
-import error
+import error, signal
 
 class SaveFileMgr:
     OK          = 0
@@ -22,12 +22,15 @@ class SaveFileMgr:
         self.open_handler = open_handler
         self.save_handler = save_handler
         self.format = format
+        self.change_signal = signal.Signal()
 
     def flag_change(self):
         self.unsaved_changes = True
+        self.change_signal()
     
     def clear_changes(self):
         self.unsaved_changes = False
+        self.change_signal()
 
     def new(self):
         '''
@@ -43,7 +46,8 @@ class SaveFileMgr:
         rslt = self.new_handler()
         if SaveFileMgr.OK == rslt:
             self.filename = None
-            self.unsaved_changes = False
+            self.clear_changes()
+
         return rslt
 
     def _save(self, filename):
@@ -63,6 +67,7 @@ class SaveFileMgr:
         rslt = self.save_handler(filename)
         if SaveFileMgr.OK == rslt:
             self.filename = filename
+            self.unsaved_changes = False
             self.clear_changes()
 
         return rslt
