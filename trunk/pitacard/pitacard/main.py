@@ -21,7 +21,7 @@
 
 import gtk
 import logging, optparse, os, string
-import config, log, pitacard
+import config, log, ui
 
 logger = logging.getLogger('pitacard.main')
 
@@ -48,10 +48,10 @@ def main(dev=False):
         logger.error('Unable to open config file: %s' % options.configfile)
     cfg = init_config([options.configfile])
 
-    m = pitacard.UI(os.path.join(os.path.dirname(__file__),
-                                 'glade',
-                                 'pitacard.glade'),
-                    cfg)
+    m = ui.UI(os.path.join(os.path.dirname(__file__),
+                           'glade',
+                           'pitacard.glade'),
+              cfg)
 
     filename = ''
     if options.filename:

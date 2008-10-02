@@ -20,9 +20,8 @@
 #     teal@mailshack.com
 
 from sqlite3 import dbapi2 as sqlite
-import gtk
 import logging
-import model, profile
+import db, model, profile
 
 logger = logging.getLogger('pitacard.stackio')
 
@@ -48,28 +47,13 @@ card_fields = [
     ['type',  'text']    
     ]
 
-def get_connection(dbname):
-    return sqlite.connect(dbname,
-                          detect_types=sqlite.PARSE_DECLTYPES|sqlite.PARSE_COLNAMES)
-
-def table_exists(cursor, table_name):
-    cursor.execute('select tbl_name from sqlite_master where tbl_name="%s"' % table_name)
-    list_tables = cursor.fetchall()
-    if len(list_tables) == 1: return True
-    else: return False
-
-def create_table(cursor, name, fields, recreate=True):
-    if recreate and table_exists(cursor, name):
-        cursor.execute('drop table %s' % name)
-    cursor.execute('create table %s(' % name + ', '.join(['%s %s' % (f[0], f[1]) for f in fields])  + ")")
-
 def create_tables(cursor):
-    create_table(cursor, 'format', format_fields)
-    create_table(cursor, 'profile', profile_fields)
-    create_table(cursor, 'cards', card_fields)
+    db.create_table(cursor, 'format', format_fields)
+    db.create_table(cursor, 'profile', profile_fields)
+    db.create_table(cursor, 'cards', card_fields)
 
 def save(filename, cards, profile):
-    conn = get_connection(filename)
+    conn = db.get_connection(filename)
     thecursor = conn.cursor()
     create_tables(thecursor)
 
@@ -88,66 +72,40 @@ def save(filename, cards, profile):
 
     conn.commit()
 
-class NoSuchTableError:
-    pass
-class NoSuchValueError:
-    pass
-
-def read_field(table, field, conn, default=None):
-    cursor = conn.cursor()
-
-    if not table_exists(cursor, table):
-        if not default is None:
-            return default
-        raise NoSuchTableError
-
-    try:
-        cursor.execute('select %s from %s LIMIT 1' % (field, table))
-    except sqlite.OperationalError:
-        if not default is None:
-            return default
-
-    row = cursor.fetchone()
-    if not row or len(row) != 1:
-        if not default is None:
-            return default
-        raise NoSuchValueError
-    return row[0]
-
 def load(filename):
     '''
     returns profile, model
     '''
-    conn = get_connection(filename)
+    conn = db.get_connection(filename)
 
     mdl = model.new_model()
     pfl = profile.Profile()
 
     # read file format info
     try:
-        version = read_field('format', 'file_version', conn)
+        version = db.read_field('format', 'file_version', conn)
         logger.info('File version for %s: %d' % (filename, version))
-    except NoSuchTableError:
+    except db.NoSuchTableError:
         logger.warning('No format information exists in file %s.' % filename)
-    except NoSuchValueError:
+    except db.NoSuchValueError:
         logger.error('Invalid format info for %s' % filename)
 
     # read profile info
-    if not table_exists(conn.cursor(), 'profile'):
+    if not db.table_exists(conn.cursor(), 'profile'):
         logger.warning('No profile information exists i nfile %s' % filename)
     else:
-        pfl.selection_method = int(read_field('profile', 'selection_method', conn,
-                                              pfl.selection_method))
-        pfl.sandbox = bool(read_field('profile', 'sandbox', conn,
-                                      pfl.sandbox))
-        pfl.render_html = bool(read_field('profile', 'render_html', conn,
-                                          pfl.render_html))
-        pfl.review_mode = int(read_field('profile', 'review_mode', conn,
-                                         pfl.review_mode))
+        pfl.selection_method = int(db.read_field('profile', 'selection_method', conn,
+                                                 pfl.selection_method))
+        pfl.sandbox = bool(db.read_field('profile', 'sandbox', conn,
+                                         pfl.sandbox))
+        pfl.render_html = bool(db.read_field('profile', 'render_html', conn,
+                                             pfl.render_html))
+        pfl.review_mode = int(db.read_field('profile', 'review_mode', conn,
+                                            pfl.review_mode))
 
     # read cards
     cursor = conn.cursor()
-    if table_exists(cursor, 'cards'):
+    if db.table_exists(cursor, 'cards'):
         cursor.execute('select ' + 
                        ','.join([f[0] for f in card_fields]) +
                        ' from cards')

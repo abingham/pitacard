@@ -19,8 +19,6 @@
 #     austin.bingham@gmail.com
 
 from pysqlite2 import dbapi2 as sqlite
-import gtk
-import model
 
 def get_connection(dbname):
     return sqlite.connect(dbname,
@@ -32,37 +30,34 @@ def table_exists(cursor, table_name):
     if len(list_tables) == 1: return True
     else: return False
 
-def create_tables(cursor):
-    if not table_exists(cursor, 'cards'):
-        cursor.execute("""
-        create table cards(
-        bin int,
-        front text,
-        back text)
-        """)
+def create_table(cursor, name, fields, recreate=True):
+    if recreate and table_exists(cursor, name):
+        cursor.execute('drop table %s' % name)
+    cursor.execute('create table %s(' % name + ', '.join(['%s %s' % (f[0], f[1]) for f in fields])  + ")")
 
-def save(filename, cards):
-    conn = get_connection(filename)
+class NoSuchTableError:
+    pass
+
+class NoSuchValueError:
+    pass
+
+def read_field(table, field, conn, default=None):
     cursor = conn.cursor()
-    create_tables(cursor)
-    cursor.execute('delete from cards')
 
-    for c in cards:
-        cursor.execute('insert into cards values(?,?,?)',
-                       (c[model.BIN_IDX],
-                        c[model.FRONT_IDX],
-                        c[model.BACK_IDX]))
+    if not table_exists(cursor, table):
+        if not default is None:
+            return default
+        raise NoSuchTableError
 
-    conn.commit()
+    try:
+        cursor.execute('select %s from %s LIMIT 1' % (field, table))
+    except sqlite.OperationalError:
+        if not default is None:
+            return default
 
-def load(filename):
-    conn = get_connection(filename)
-    cursor = conn.cursor()
-    rval = model.new_model()
-    if table_exists(cursor, 'cards'):
-        cursor.execute('select * from cards')
-        for row in cursor.fetchall():
-            rval.append([row[0], row[1], row[2]])
-
-    return rval
-
+    row = cursor.fetchone()
+    if not row or len(row) != 1:
+        if not default is None:
+            return default
+        raise NoSuchValueError
+    return row[0]

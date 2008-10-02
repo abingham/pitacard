@@ -318,18 +318,8 @@ class Review:
             report.append("1 unique card was reviewed. The remaining " + str(len(self.session['CARDHASHES']) * 100 / self.session['CARDNUM'])[:4] + "%), the rest were repeats.")
         else:
             report.append( str(len(self.session['CARDHASHES'])) + " unique cards were reviewed. The remaining " + str(self.session['CARDNUM'] - len(self.session['CARDHASHES'])) + " were repeats")
-        if len(self.cards) < len(self.cards_unsorted) and (self.profile[model.TYPE_I_PIDX] == 0 or self.profile[model.TYPE_R_PIDX] == 0 or self.profile[model.TYPE_N_PIDX]) == 0:
-            bannedcards = []
-            if self.profile[model.TYPE_I_PIDX] == 0:
-                bannedcards.append("irreversable")
-            if self.profile[model.TYPE_R_PIDX] == 0:
-                bannedcards.append("reversable")
-            if self.profile[model.TYPE_N_PIDX] == 0:
-                bannedcards.append("notes")
-            report.append("That means you've reviewed " + str(len(self.session['CARDHASHES']) * 100 / len(self.cards))[:4] + "% of pool of " + str(len(self.cards)) + " cards")
-            report.append("You only reviewed out of a pool of " + str(len(self.cards)) + " cards, drawn from a stack of " + str(len(self.cards_unsorted)) + " cards, because you have decided not to view the following kinds of cards: " + ', '.join(bannedcards) + ".")
-        else:
-            report.append("That means you've reviewed " + str(len(self.session['CARDHASHES']) * 100 / len(self.cards))[:4] + "% of all your " + str(len(self.cards)) + " cards")
+
+        report.append("That means you've reviewed " + str(len(self.session['CARDHASHES']) * 100 / len(self.cards))[:4] + "% of all your " + str(len(self.cards)) + " cards")
         report.append(" ")
 
         #TIME REPORT
