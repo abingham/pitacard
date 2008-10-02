@@ -36,8 +36,8 @@ class UI:
             self.quit()
             return True
 
-    def __init__(self, gladefile, config):
-        self.config = config
+    def __init__(self, gladefile, cfg):
+        self.config = cfg
         self.profmodel = new_profile_model()
 
         self.gladefile = gladefile
@@ -53,9 +53,9 @@ class UI:
                                          self.save_handler)
         self.save_file_mgr.change_signal.connect(self.sync_ui)
         
-        if self.config.readvalue('startup', 'preservegeom') == 'true':
-            self.main_window.resize(int(self.config.readvalue('startup', 'lastwidth')), int(self.config.readvalue('startup', 'lastheight')))
-            self.main_window.move(int(self.config.readvalue('startup', 'lastposx')), int(self.config.readvalue('startup', 'lastposy')))
+        if self.config.get('startup', 'preservegeom') == 'true':
+            self.main_window.resize(int(self.config.get('startup', 'lastwidth')), int(self.config.get('startup', 'lastheight')))
+            self.main_window.move(int(self.config.get('startup', 'lastposx')), int(self.config.get('startup', 'lastposy')))
         else:
             self.main_window.resize(500, 500)
             self.main_window.move(380, 150)

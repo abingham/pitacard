@@ -26,19 +26,19 @@ from time import time
 
 #For other purposes.
 from math import *
-import random, gtk, gtk.glade, commands, webbrowser
+import random, gtk, gtk.glade, commands, webbrowser, logging
 import htmltextview
 import model
 
-
+logger = logging.getLogger('pitacard.review')
 
 class Review:
-    def __init__(self, parentwindow, gladefile, config, cards_unsorted, profile, bins=10):
+    def __init__(self, parentwindow, gladefile, cfg, cards_unsorted, profile, bins=10):
         
         assert len(cards_unsorted) > 0, 'No cards in deck supplier to Leitner review'
         self.cards_unsorted = cards_unsorted
         self.profile = profile
-        self.config = config
+        self.config = cfg
         self.num_bins = bins
         
         # self.session is used to collect statistics about the current session. These statistics are displayed at the bottom of the window (cardnum) and in a collected report form. 'CARDHASHES' is a set which is used to count the number of unique cards used in a session. A card is md5 hex-hashed and added to the set. If the hash already exists in the set, nothing is added. That way the set increases by 1 for every _different_ card. 'STARTTIME' is obviously used to record timing. Later the time function is used again, and subtraction used to tell the difference.
@@ -61,11 +61,11 @@ class Review:
             self.statustext.set_label('Reviewed: ' + str(self.session['CARDNUM']) + '\nLeft: ' + str(self.profile[model.CARDNUM_PIDX] - self.session['CARDNUM']))
 
 
-        if self.config.readvalue('startup', 'preservegeom') == 'true':
-            self.window.resize(int(self.config.readvalue('appearance', 'rvwlastwidth')), 
-                                int(self.config.readvalue('appearance', 'rvwlastheight')))
-            self.window.move(int(self.config.readvalue('appearance', 'rvwlastposx')),
-                                int(self.config.readvalue('appearance', 'rvwlastposy')))
+        if self.config.getboolean('startup', 'preservegeom'):
+            self.window.resize(self.config.getint('appearance', 'rvwlastwidth'),
+                               self.config.getint('appearance', 'rvwlastheight'))
+            self.window.move(self.config.getint('appearance', 'rvwlastposx'),
+                             self.config.getint('appearance', 'rvwlastposy'))
         else:
             self.window.resize(500, 500)
             self.window.move(480, 140)
@@ -85,7 +85,7 @@ class Review:
         self.siftcards()
 
         if len(self.cards) < 1:
-            print "error... no cards found."
+            logger.warning("no cards found.")
             #If there are no cards, yet the user opened the review window (possible if the user has only cards in their deck of a type that they've set not to use in options) nothing happens. Buttons don't work. Empty fields. That's all. I feel that telling the user why no cards show up would be superfluous.
             self.sensitize_buttons(False, False, False)
         else:
@@ -249,7 +249,7 @@ class Review:
                 questionformat=False
                 self.questionside=1
         else:
-            print "error! card type not recognized! Treating as an irreversible card."
+            logger.error("Card type not recognized! Treating as an irreversible card.")
             questionformat=True
             self.questionside=1
 
@@ -387,8 +387,8 @@ class Review:
     def delete_event(self, object=None, event=None):
         width, height = self.window.get_size()
         posx, posy = self.window.get_position()
-        self.config.writevalue({'appearance': {'rvwlastwidth': width}})
-        self.config.writevalue({'appearance': {'rvwlastheight': height}})
-        self.config.writevalue({'appearance': {'rvwlastposx': posx}})
-        self.config.writevalue({'appearance': {'rvwlastposy': posy}})
+        self.config.set('appearance', 'rvwlastwidth', str(width))
+        self.config.set('appearance', 'rvwlastheight', str(height))
+        self.config.set('appearance', 'rvwlastposx', str(posx))
+        self.config.set('appearance', 'rvwlastposy', str(posy))
         self.end_review()

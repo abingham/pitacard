@@ -19,8 +19,11 @@
 #     austin.bingham@gmail.com
 #     teal@mailshack.com
 
-import gtk, csv
+import csv, logging
+import gtk
 import model
+
+logger = logging.getLogger('pitacard.csvio')
 
 def save(filename, cards, profiles):
     writer = csv.writer(open(filename, "wb"))
@@ -63,7 +66,7 @@ def load(filename):
                         int(row[8]),
                         int(row[9])])
                 except:
-                    print "could not load the following row:", row
+                    logger.warning("Could not load the following row: %s" % row)
             elif row[0] == "card" and len(row) >= 5 :
                 try:
                     rval.append([
@@ -72,7 +75,7 @@ def load(filename):
                         str(row[3]),
                         str(row[4])])
                 except:
-                    print "could not load the following row:", row
+                    logger.warning("Could not load the following row: %s" % row)
             elif len(row) == 2:
                 try:
                     '''it's probably a compatibility mode .csv file or a .csv from some other program. assume the first column is the front of the card and the second column is the back of the card.'''
@@ -83,7 +86,7 @@ def load(filename):
                             str(row[0]),
                             str(row[1])])
                 except:
-                    print "could not load the following row:", row
+                    logger.warning("Could not load the following row: %s" % row)
         rvals.append(rval)
         optvals.append(optval)
 

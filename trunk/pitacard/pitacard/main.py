@@ -19,9 +19,11 @@
 #     austin.bingham@gmail.com
 #     teal@mailshack.com
 
-import optparse, os, string
-import configmanage
-from pitacard import *
+import gtk
+import logging, optparse, os, string
+import config, log, pitacard
+
+logger = logging.getLogger('pitacard.main')
 
 def parse_args():
     parser = optparse.OptionParser()
@@ -32,33 +34,51 @@ def parse_args():
                       default=os.path.expanduser(os.path.join('~', '.pitacardrc')))
     return parser.parse_args()
 
+def init_config(config_files):
+    cfg = config.Config(config.options)
+    cfg.read(config_files)
+    return cfg
+
 def main(dev=False):
+    log.init_logging()
+
     (options, args) = parse_args()
 
-    config = configmanage.ConfigTool(options.configfile)
+    if not os.path.lexists(options.configfile):
+        logger.error('Unable to open config file: %s' % options.configfile)
+    cfg = init_config([options.configfile])
 
-    m = UI(os.path.join(os.path.dirname(__file__),
-                        'glade',
-                        'pitacard.glade'),
-           config)
+    m = pitacard.UI(os.path.join(os.path.dirname(__file__),
+                                 'glade',
+                                 'pitacard.glade'),
+                    cfg)
 
     filename = ''
     if options.filename:
         filename = options.filename
-    elif string.lower(str(config.readvalue('startup', 'usefile'))) == 'custom':
-        if os.path.lexists(config.readvalue('startup', 'customfile')):
-            filename = config.readvalue('startup', 'customfile')
-        elif config.readvalue('startup', 'customfile') != "":
-            print "Note: Could not open startup stack", config.readvalue('startup', 'customfile')
-    elif string.lower(str(config.readvalue('startup', 'usefile'))) == 'last' and os.path.lexists(config.readvalue('startup', 'lastfile')):
-        filename = config.readvalue('startup', 'lastfile')
+    elif cfg.get('startup', 'usefile').lower() == 'custom':
+        filename = cfg.get('startup', 'customfile')
+    elif cfg.get('startup', 'usefile').lower() == 'last':
+        filename = cfg.get('startup', 'lastfile')
 
     filename = os.path.expanduser(filename)
 
     if filename:
-        print 'Opening file:',filename
-        m.open(filename)
+        if not os.path.lexists(filename):
+            logger.warning('Could not open startup stack: %s' % filename)
+        else:
+            logger.info('Opening file: %s' % filename)
+            m.open_handler(filename)
+
     gtk.main()
+
+    # write config
+    cfgfile = open(options.configfile, 'w')
+    if not cfgfile:
+        logger.error('Unable to open config file for writing: %s' % options.configfile)
+    else:
+        logger.info('Reading config file: %s' % cfgfile)
+        cfg.write(cfgfile)
 
 if __name__ == '__main__':
     main()

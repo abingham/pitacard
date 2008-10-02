@@ -133,32 +133,6 @@
               </widget>
             </child>
             <child>
-              <widget class="GtkMenuItem" id="extras">
-                <property name="visible">True</property>
-                <property name="label" translatable="yes">_Tools</property>
-                <property name="use_underline">True</property>
-                <child>
-                  <widget class="GtkMenu" id="extras_menu">
-                    <child>
-                      <widget class="GtkImageMenuItem" id="options_menu">
-                        <property name="visible">True</property>
-                        <property name="label" translatable="yes">_Options</property>
-                        <property name="use_underline">True</property>
-                        <signal name="activate" handler="on_options_menu_activate"/>
-                        <child internal-child="image">
-                          <widget class="GtkImage" id="image122">
-                            <property name="visible">True</property>
-                            <property name="stock">gtk-preferences</property>
-                            <property name="icon_size">1</property>
-                          </widget>
-                        </child>
-                      </widget>
-                    </child>
-                  </widget>
-                </child>
-              </widget>
-            </child>
-            <child>
               <widget class="GtkMenuItem" id="mainmenu_help">
                 <property name="visible">True</property>
                 <property name="label" translatable="yes">_Help</property>
@@ -272,29 +246,6 @@
                 <property name="use_underline">True</property>
                 <property name="stock_id">gtk-execute</property>
                 <signal name="clicked" handler="on_do_review_button_clicked"/>
-                <accelerator key="r" modifiers="GDK_CONTROL_MASK" signal="clicked"/>
-              </widget>
-              <packing>
-                <property name="expand">False</property>
-              </packing>
-            </child>
-            <child>
-              <widget class="GtkSeparatorToolItem" id="separatortoolitem2">
-                <property name="visible">True</property>
-              </widget>
-              <packing>
-                <property name="expand">False</property>
-                <property name="homogeneous">False</property>
-              </packing>
-            </child>
-            <child>
-              <widget class="GtkToolButton" id="do_options_button">
-                <property name="visible">True</property>
-                <property name="tooltip" translatable="yes">Start a rev iew session (shortcut: ctrl-r)</property>
-                <property name="label" translatable="yes">Options</property>
-                <property name="use_underline">True</property>
-                <property name="stock_id">gtk-properties</property>
-                <signal name="clicked" handler="on_do_options_button_clicked"/>
                 <accelerator key="r" modifiers="GDK_CONTROL_MASK" signal="clicked"/>
               </widget>
               <packing>
