@@ -68,7 +68,7 @@ def main(dev=False):
             logger.warning('Could not open startup stack: %s' % filename)
         else:
             logger.info('Opening file: %s' % filename)
-            m.open_handler(filename)
+            m.open(filename)
 
     gtk.main()
 

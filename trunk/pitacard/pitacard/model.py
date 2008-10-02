@@ -21,10 +21,10 @@
 
 import gtk
 
-BIN_CIDX = 2
-TYPE_CIDX = 3
 FRONT_CIDX = 0
 BACK_CIDX = 1
+BIN_CIDX = 2
+TYPE_CIDX = 3
 
 cardtypes = [ 'I', 'R', 'N' ]   #This list is used for two functions: to translate the string that is actually put into the ListStore for type into a position on a combobox, and to be a list of the different values put into the type ListStore for the purpose of shortening card sifting functions (such as the one in 'Review').
 
@@ -34,6 +34,7 @@ def new_model():
                          int, # bin
 			 str) # type
 
+'''
 NAME_PIDX = 0		#name
 CARDNUM_PIDX = 1	#cardnum.
 TYPE_I_PIDX = 2 	#options for irreversable cards.
@@ -54,3 +55,4 @@ def new_profile_model():
                          int, #SANDBOX
 			 int, #RENDERHTML
                          int) #RVWLAYOUT
+'''

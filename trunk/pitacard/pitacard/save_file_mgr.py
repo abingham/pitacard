@@ -139,7 +139,7 @@ class SaveFileMgr:
         if not SaveFileMgr.OK == rslt:
             return rslt
         
-        if filename and not path.lexists(filename):
+        if filename and not os.path.lexists(filename):
             error.error('%s does not exist' % filename, self.parent_window)
             return SaveFileMgr.ERROR
         elif not filename:

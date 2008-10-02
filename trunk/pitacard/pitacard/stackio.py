@@ -21,34 +21,31 @@
 
 from sqlite3 import dbapi2 as sqlite
 import gtk
-import model
+import logging
+import model, profile
+
+logger = logging.getLogger('pitacard.stackio')
 
 #Below are the master field lists. If you change the treemodel's structure, these are the only things you need to edit for this file, the code will handle the rest (adding columns, etc.) but you MUST edit them accordingly.
 
-profilefields = [
-    #['fieldname', 'type', 'defaultvalue']
-    ['name',         'text',    '\' \''],#A set of escaped quotations are included so that they show up for the SQL query, so its treated as a static string rather than a field to look for.
-    ['cardnum',    'int',      '0'],
-    ['cardtype_i',  'int',      '0'],
-    ['cardtype_r',  'int',      '0'],
-    ['cardtype_n', 'int',      '0'],
-    ['select_sys',  'int',      '0'],
-    ['sandbox',     'int',      '0'],
-    ['renderhtml', 'int',      '0'],
-    ['rvwlayout',    'int',      '0']
+format_fields = [
+    ['file_version', 'int']
     ]
 
-cardfields = [
-    # ['fieldname', 'type', 'defaultvalue']
-    ['front', 'text', '\' \''],
-    ['back',  'text', '\' \''],
-    ['bin',   'int',  '0'    ],
-    ['type',  'text', '\'I\''], # A set of escaped quotations are
-                                # included so that they show up for
-                                # the SQL query, so its treated as a
-                                # static string rather than a field to
-                                # look for.
-    
+profile_fields = [
+    #['fieldname', 'type']
+    ['selection_method', 'int'],
+    ['sandbox',          'int'],
+    ['render_html',      'int'],
+    ['review_mode',      'int']
+    ]
+
+card_fields = [
+    # ['fieldname', 'type']
+    ['front', 'text'],
+    ['back',  'text'],
+    ['bin',   'int'],
+    ['type',  'text']    
     ]
 
 def get_connection(dbname):
@@ -61,66 +58,100 @@ def table_exists(cursor, table_name):
     if len(list_tables) == 1: return True
     else: return False
 
-def create_tables(thecursor):
+def create_table(cursor, name, fields, recreate=True):
+    if recreate and table_exists(cursor, name):
+        cursor.execute('drop table %s' % name)
+    cursor.execute('create table %s(' % name + ', '.join(['%s %s' % (f[0], f[1]) for f in fields])  + ")")
 
-    if table_exists(thecursor, 'profiles'):
-        thecursor.execute("drop table profiles")
-    thecursor.execute("create table profiles(" + ', '.join([' '.join([x[0], x[1]]) for x in profilefields])  + ")")
+def create_tables(cursor):
+    create_table(cursor, 'format', format_fields)
+    create_table(cursor, 'profile', profile_fields)
+    create_table(cursor, 'cards', card_fields)
 
-    if table_exists(thecursor, 'cards'):
-        thecursor.execute("drop table cards")
-    thecursor.execute("create table cards(" + ', '.join([' '.join([x[0], x[1]]) for x in cardfields]) + ")")
-
-def save(filename, cards, profiles):
+def save(filename, cards, profile):
     conn = get_connection(filename)
     thecursor = conn.cursor()
     create_tables(thecursor)
 
-    for p in profiles:
-        thecursor.execute('insert into profiles values(?,?,?,?,?,?,?,?,?)',
-                       tuple([p[x] for x in range(0,len(profilefields))]))
+    thecursor.execute('insert into format values(?)', ('0'))
+
+    thecursor.execute('insert into profile values(?,?,?,?)',
+                      (profile.selection_method,
+                       int(profile.sandbox),
+                       int(profile.render_html),
+                       int(profile.review_mode)
+                      ))
 
     for c in cards:
         thecursor.execute('insert into cards values(?,?,?,?)',
-                       tuple([c[x] for x in range(0,len(cardfields))]))
+                       tuple([c[x] for x in range(0,len(card_fields))]))
 
     conn.commit()
 
+class NoSuchTableError:
+    pass
+class NoSuchValueError:
+    pass
+
+def read_field(table, field, conn, default=None):
+    cursor = conn.cursor()
+
+    if not table_exists(cursor, table):
+        if not default is None:
+            return default
+        raise NoSuchTableError
+
+    try:
+        cursor.execute('select %s from %s LIMIT 1' % (field, table))
+    except sqlite.OperationalError:
+        if not default is None:
+            return default
+
+    row = cursor.fetchone()
+    if not row or len(row) != 1:
+        if not default is None:
+            return default
+        raise NoSuchValueError
+    return row[0]
+
 def load(filename):
+    '''
+    returns profile, model
+    '''
     conn = get_connection(filename)
-    thecursor = conn.cursor()
-    rval = model.new_model()
-    optval = model.new_profile_model()
 
-    if table_exists(thecursor, 'profiles'):
-        #Get the current table fields and where they go to.
-        thecursor.execute("select * from profiles LIMIT 1")
-        if thecursor.description == None:
-            curfields = []
-        else:
-            curfields = [ x[0] for x in thecursor.description ] #find the columns in the table.
-        for field in profilefields:    #for every field that should be in the table
-            if field[0] in curfields:         #if its in the table as a column
-                field[2] = field[0]   #we'll use that columns value. Otherwise the empty slate default for that column is used when loading the stack.
+    mdl = model.new_model()
+    pfl = profile.Profile()
 
-        #Get the data from the table
-        thecursor.execute('SELECT ' + ', '.join([x[2] for x in profilefields ]) + ' FROM profiles')
-        for row in thecursor.fetchall():
-            optval.append(list(row))
+    # read file format info
+    try:
+        version = read_field('format', 'file_version', conn)
+        logger.info('File version for %s: %d' % (filename, version))
+    except NoSuchTableError:
+        logger.warning('No format information exists in file %s.' % filename)
+    except NoSuchValueError:
+        logger.error('Invalid format info for %s' % filename)
 
-    if table_exists(thecursor, 'cards'):
-        #Get the current table fields and where they go to.
-        thecursor.execute("select * from cards LIMIT 1")
-        if thecursor.description == None:
-            curfields = []
-        else:
-            curfields = [ x[0] for x in thecursor.description ] #find the columns in the table.
-        for field in cardfields:    #for every field that should be in the table
-            if field[0] in curfields:         #if its in the table as a column
-                field[2] = field[0]   #we'll use that columns value. Otherwise the empty slate default for that column is used when loading the stack.
+    # read profile info
+    if not table_exists(conn.cursor(), 'profile'):
+        logger.warning('No profile information exists i nfile %s' % filename)
+    else:
+        pfl.selection_method = int(read_field('profile', 'selection_method', conn,
+                                              pfl.selection_method))
+        pfl.sandbox = bool(read_field('profile', 'sandbox', conn,
+                                      pfl.sandbox))
+        pfl.render_html = bool(read_field('profile', 'render_html', conn,
+                                          pfl.render_html))
+        pfl.review_mode = int(read_field('profile', 'review_mode', conn,
+                                         pfl.review_mode))
 
-        #Get the data from the table
-        thecursor.execute('SELECT ' + ', '.join([x[2] for x in cardfields ]) + ' FROM cards')
-        for row in thecursor.fetchall():
-            rval.append(list(row))
-    return optval, rval
+    # read cards
+    cursor = conn.cursor()
+    if table_exists(cursor, 'cards'):
+        cursor.execute('select ' + 
+                       ','.join([f[0] for f in card_fields]) +
+                       ' from cards')
+        for row in cursor.fetchall():
+            mdl.append(list(row))
+
+    return pfl, mdl

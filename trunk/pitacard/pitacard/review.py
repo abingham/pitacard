@@ -28,20 +28,28 @@ from time import time
 from math import *
 import random, gtk, gtk.glade, commands, webbrowser, logging
 import htmltextview
-import model
+import model, profile
 
 logger = logging.getLogger('pitacard.review')
 
 class Review:
-    def __init__(self, parentwindow, gladefile, cfg, cards_unsorted, profile, bins=10):
-        
-        assert len(cards_unsorted) > 0, 'No cards in deck supplier to Leitner review'
-        self.cards_unsorted = cards_unsorted
+    def __init__(self, parentwindow, gladefile, cfg, cards, profile, bins=10):
+        assert len(cards) > 0, 'No cards in deck supplier to Leitner review'
+        self.cards = cards
         self.profile = profile
         self.config = cfg
         self.num_bins = bins
         
-        # self.session is used to collect statistics about the current session. These statistics are displayed at the bottom of the window (cardnum) and in a collected report form. 'CARDHASHES' is a set which is used to count the number of unique cards used in a session. A card is md5 hex-hashed and added to the set. If the hash already exists in the set, nothing is added. That way the set increases by 1 for every _different_ card. 'STARTTIME' is obviously used to record timing. Later the time function is used again, and subtraction used to tell the difference.
+        # self.session is used to collect statistics about the current
+        # session. These statistics are displayed at the bottom of the
+        # window (cardnum) and in a collected report
+        # form. 'CARDHASHES' is a set which is used to count the
+        # number of unique cards used in a session. A card is md5
+        # hex-hashed and added to the set. If the hash already exists
+        # in the set, nothing is added. That way the set increases by
+        # 1 for every _different_ card. 'STARTTIME' is obviously used
+        # to record timing. Later the time function is used again, and
+        # subtraction used to tell the difference.
         self.session = {'CARDNUM': 0, 'CARDHASHES': set(), 'CORRECT': 0, 'WRONG': 0, 'STARTTIME': time()}
 
         # assign handles
@@ -55,11 +63,9 @@ class Review:
         self.correct_button = xml.get_widget('correct_button')
         self.wrong_button = xml.get_widget('wrong_button')
         self.statustext = xml.get_widget('Review - CurrCardnum')
-        if self.profile[model.CARDNUM_PIDX] == 0:
-            self.statustext.set_label('Reviewed: ' + str(self.session['CARDNUM']) + '\nLeft: ' + str('infinite'))
-        else:
-            self.statustext.set_label('Reviewed: ' + str(self.session['CARDNUM']) + '\nLeft: ' + str(self.profile[model.CARDNUM_PIDX] - self.session['CARDNUM']))
 
+        self.statustext.set_label('Reviewed: %d\nLeft: %d' % (self.session['CARDNUM'],
+                                                              len(cards) - self.session['CARDNUM']))
 
         if self.config.getboolean('startup', 'preservegeom'):
             self.window.resize(self.config.getint('appearance', 'rvwlastwidth'),
@@ -81,12 +87,14 @@ class Review:
             lambda x: self.delete_event()
             })
 
-        #Sift through cards. Create new list linking to used ones.
-        self.siftcards()
-
         if len(self.cards) < 1:
             logger.warning("no cards found.")
-            #If there are no cards, yet the user opened the review window (possible if the user has only cards in their deck of a type that they've set not to use in options) nothing happens. Buttons don't work. Empty fields. That's all. I feel that telling the user why no cards show up would be superfluous.
+            # If there are no cards, yet the user opened the review
+            # window (possible if the user has only cards in their
+            # deck of a type that they've set not to use in options)
+            # nothing happens. Buttons don't work. Empty
+            # fields. That's all. I feel that telling the user why no
+            # cards show up would be superfluous.
             self.sensitize_buttons(False, False, False)
         else:
             # If there are cards in the card pool, initialize view to first card
@@ -108,7 +116,7 @@ class Review:
         answer_scroller.set_shadow_type(gtk.SHADOW_IN)
         answer_scroller.set_policy(gtk.POLICY_AUTOMATIC, gtk.POLICY_AUTOMATIC)
         
-        if self.profile[model.RENDERHTML_PIDX] == 1:
+        if self.profile.render_html:
             #If we're rendering the cards HTML
             self.question_block = htmltextview.HtmlTextView()
             self.question_block.connect("url-clicked", self.url_cb)
@@ -125,7 +133,7 @@ class Review:
 
         backlabel = gtk.Label("Back")	#We will position the word 'back' so it's put right next to the pane which actually displays the answer.
         backlabel.set_padding(15, 0)
-        if self.profile[model.RVWLAYOUT_PIDX] == 0:
+        if True: # self.profile[model.RVWLAYOUT_PIDX] == 0:
             #If we have Q and A hoz. to eachother
             paned = gtk.HPaned()
             labelhbox.pack_end(backlabel, False, False)
@@ -149,33 +157,6 @@ class Review:
         answer_scroller.show()
         paned.show()
 
-    def siftcards(self):
-        siftedcards = []
-        card_usequery = {}
-        deckpos = 0
-        def passer(*args):
-            pass
-        def userow(siftedcards, deckpos, cardrow):
-            siftedcards.insert(deckpos, cardrow)
-            deckpos += 1
-        if self.profile[model.TYPE_I_PIDX] == 0:
-            card_usequery['I'] = passer
-        elif self.profile[model.TYPE_I_PIDX] > 0:
-            card_usequery['I'] = userow
-        if self.profile[model.TYPE_R_PIDX] == 0:
-            card_usequery['R'] = passer
-        elif self.profile[model.TYPE_R_PIDX] > 0:
-            card_usequery['R'] = userow
-        if self.profile[model.TYPE_N_PIDX] == 0:
-            card_usequery['N'] = passer
-        elif self.profile[model.TYPE_N_PIDX]  > 0:
-            card_usequery['N'] = userow
-
-        for i in self.cards_unsorted:
-            if i[model.TYPE_CIDX] in model.cardtypes: #this is used solely so if the type has been screwed up through a change in a csv file, the app doesn't sweat it.
-                card_usequery[i[model.TYPE_CIDX]](siftedcards, deckpos, i)
-        self.cards = siftedcards
-
     def url_cb(view, object, url, event):
         '''handles the clicking of a link within an html-rendered textview'''
         webbrowser.open_new(url)
@@ -186,7 +167,7 @@ class Review:
         del self
     
     def displaytext(self, viewer, text):
-        if self.profile[model.RENDERHTML_PIDX] == 1:
+        if self.profile.render_html:
             viewer.display_html_replace("""
             <body xmlns='http://www.w3.org/1999/xhtml'>
             """ + str(text) + """
@@ -206,12 +187,9 @@ class Review:
         self.session['CARDHASHES'].add(hasher.hexdigest())
         
         self.session['CARDNUM'] += 1
-        if self.profile[model.CARDNUM_PIDX] == 0:
-            self.statustext.set_label('Reviewed: ' + str(self.session['CARDNUM']) + '\nLeft: ' + str('infinite'))
-        else:
-            self.statustext.set_label('Reviewed: ' + str(self.session['CARDNUM']) + '\nLeft: ' + str(self.profile[model.CARDNUM_PIDX] - self.session['CARDNUM']))
+        self.statustext.set_label('Reviewed: ' + str(self.session['CARDNUM']) + '\nLeft: ' + str(len(self.cards) - self.session['CARDNUM']))
 
-        if int(self.session['CARDNUM']) == int(self.profile[model.CARDNUM_PIDX]) and self.profile[model.CARDNUM_PIDX] != 0:
+        if int(self.session['CARDNUM']) == int(len(self.cards)) and len(self.cards) != 0:
             self.generate_report()
         else:
             self.show_next_card()
@@ -226,12 +204,15 @@ class Review:
     def show_next_card(self):
         
         #CARD SELECTION METHOD
-        if self.profile[model.SELECTSYS_PIDX] == 0:
+        if self.profile.selection_method == profile.Profile.LEITNER_METHOD:
             self.curr_card = self.get_next_card_leitner()
-        elif self.profile[model.SELECTSYS_PIDX] == 1:
+        elif self.profile.selection_methoid == profile.Profile.RANDOM_METHOD:
             self.curr_card = self.get_next_card_random()
         
         #CARD DISPLAYING METHOD
+        self.questionside = 1 # TODO: ... 
+        questionformat = True
+        '''
         if self.curr_card[model.TYPE_CIDX] == "I":
             # If this is a card with a question for the first side and an answer for the second side.
             if self.profile[model.TYPE_I_PIDX] == 1:
@@ -252,6 +233,7 @@ class Review:
             logger.error("Card type not recognized! Treating as an irreversible card.")
             questionformat=True
             self.questionside=1
+        '''
 
         if self.questionside==1:
             self.displaytext(self.question_block, self.curr_card[model.FRONT_CIDX])
@@ -304,11 +286,11 @@ class Review:
     def update_card(self, card, correct):
         if correct:
             self.session['CORRECT'] += 1
-            if self.profile[model.SANDBOX_PIDX] == 0:
+            if self.profile.sandbox == 0:
                 new_bin = min(self.num_bins - 1, card[model.BIN_CIDX] + 1)
         else:
             self.session['WRONG'] += 1
-            if self.profile[model.SANDBOX_PIDX] == 0:
+            if self.profile.sandbox == 0:
                 new_bin = 0
 
         card[model.BIN_CIDX] = new_bin
@@ -379,7 +361,7 @@ class Review:
         report.append("SESSION TIME:")
         report.append("You've been studying for " + extension + str(int(timediff % 60)) + " seconds.")
         
-        if self.profile[model.RENDERHTML_PIDX] == 1:
+        if self.profile.render_html == 1:
             self.displaytext(self.question_block, str("<br/> ".join(report)))
         else:
             self.displaytext(self.question_block, str("\n ".join(report)))

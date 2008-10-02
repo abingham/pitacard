@@ -22,8 +22,7 @@
 import os.path
 import gtk, gtk.glade
 import stackio, csvio
-import review, options
-from save_file_mgr import *
+import review, options, profile, save_file_mgr
 from model import *
 
 def get_text(buffer):
@@ -38,7 +37,7 @@ class UI:
 
     def __init__(self, gladefile, cfg):
         self.config = cfg
-        self.profmodel = new_profile_model()
+        self.profile = profile.Profile()
 
         self.gladefile = gladefile
         self.xml = gtk.glade.XML(self.gladefile, 'MainWindow')
@@ -46,11 +45,11 @@ class UI:
         self.main_window = self.xml.get_widget('MainWindow')
         self.main_window.connect("delete_event", self.delete_event)
 
-        self.save_file_mgr = SaveFileMgr(self.main_window,
-                                         ('pitacard stack', '.stack'),
-                                         self.new_handler,
-                                         self.open_handler,
-                                         self.save_handler)
+        self.save_file_mgr = save_file_mgr.SaveFileMgr(self.main_window,
+                                                       ('pitacard stack', '.stack'),
+                                                       self.new_handler,
+                                                       self.open_handler,
+                                                       self.save_handler)
         self.save_file_mgr.change_signal.connect(self.sync_ui)
         
         if self.config.get('startup', 'preservegeom') == 'true':
@@ -95,13 +94,13 @@ class UI:
             'on_do_review_button_clicked' :
             lambda x: self.do_review(),
             'on_save_menu_activate' :
-            lambda x: self.save_file_mgr.save(),
+            lambda x: self.save(),
             'on_save_as_menu_activate' :
-            lambda x: self.save_file_mgr.save_as(),
+            lambda x: self.save_as(),
             'on_new_menu_activate':
-            lambda x: self.save_file_mgr.new(),
+            lambda x: self.new(),
             'on_open_menu_activate' :
-            lambda x: self.save_file_mgr.open(),
+            lambda x: self.open(),
             'on_quit_menu_activate' :
             lambda x: self.quit(),
             'on_card_list_row_activated' :
@@ -112,21 +111,35 @@ class UI:
 
         self.sync_ui()
 
+    def new(self):
+        self.save_file_mgr.new()
+
     def new_handler(self):
-        self.profmodel.clear()
+        self.profile = profile.Profile()
         self.card_list.get_model().clear()
         self.connect_model()
-        return SaveFileMgr.OK
+        return save_file_mgr.SaveFileMgr.OK
+
+    def save(self):
+        self.save_file_mgr.save()
+
+    def save_as(self):
+        self.save_file_mgr.save_as()
 
     def save_handler(self, filename):
-        stackio.save(filename, self.card_list.get_model(), self.profmodel)
-        return SaveFileMgr.OK
+        stackio.save(filename, 
+                     self.card_list.get_model(), 
+                     self.profile)
+        return save_file_mgr.SaveFileMgr.OK
+
+    def open(self, filename=None):
+        self.save_file_mgr.open(filename)
 
     def open_handler(self, filename):
-        self.profmodel, model = stackio.load(filename)
+        self.profile, model = stackio.load(filename)
         self.card_list.set_model(model)
         self.connect_model()
-        return SaveFileMgr.OK
+        return save_file_mgr.SaveFileMgr.OK
         
     def init_card_list(self):
         self.card_list = self.xml.get_widget('card_list')
@@ -180,9 +193,9 @@ class UI:
             self.status_cardcount.set_label("1 Card")
         else:
             self.status_cardcount.set_label(str(cardlen) + " Cards")
-        
+
         have_cards = cardlen > 0
-        
+
         # only review if there is at least one card
         self.do_review_button.set_sensitive(have_cards)
         self.review_menu.set_sensitive(have_cards)
@@ -321,14 +334,13 @@ class UI:
         model.remove(iter)
 
     def do_review(self):
-        profile = options.GetOpts(self.profmodel, False)
         l = review.Review(self.main_window,
-                            self.gladefile,
-                            self.config,
-                            self.card_list.get_model(),
-			    profile)
+                          self.gladefile,
+                          self.config,
+                          self.card_list.get_model(),
+                          self.profile)
 
     def quit(self):
         rslt = self.save_file_mgr.quit()
-        if not SaveFileMgr.CANCEL == rslt:
+        if not save_file_mgr.SaveFileMgr.CANCEL == rslt:
             gtk.main_quit()
