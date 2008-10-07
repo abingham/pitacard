@@ -1,0 +1,6 @@
+To install pitacard, all probably need to do is the following:
+
+   python setup.py install
+
+You'll probably need to do this as root. Sorry, I know this is not much 
+info, but I'll try get around to writing more later.

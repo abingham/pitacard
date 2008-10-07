@@ -19,26 +19,25 @@
 #     austin.bingham@gmail.com
 #     teal@mailshack.com
 
-#!/usr/bin/env python
 import gtk
+from os import access
 
-from kiwi.ui.gadgets import quit_if_last
-from kiwi.ui.delegates import GladeDelegate
-from kiwi.ui.objectlist import Column
+def error(msg, parent):
+    dlg = gtk.MessageDialog(None,
+                            False,
+                            gtk.MESSAGE_ERROR,
+                            gtk.BUTTONS_CLOSE,
+                            msg)
+    dlg.set_transient_for(parent)
+    dlg.run()
+    dlg.destroy()
 
-class MainWindow(GladeDelegate):
-    def __init__(self):
-        GladeDelegate.__init__(self,
-                               gladefile="main_window",
-                               delete_handler=quit_if_last)
-        #self.card_list.set_columns([Column('front', 'Front'),
-        #                            Column('back', 'Back')])
-
-    def on_file_open__activate(self, button):
-        print 'open clicked'
-
-
-if __name__ == '__main__':
-    app = MainWindow()
-    app.show()
-    gtk.main()
+def warning(msg, parent):
+    dlg = gtk.MessageDialog(None,
+                            False,
+                            gtk.MESSAGE_WARNING,
+                            gtk.BUTTONS_CLOSE,
+                            msg)
+    dlg.set_transient_for(parent)
+    dlg.run()
+    dlg.destroy()
