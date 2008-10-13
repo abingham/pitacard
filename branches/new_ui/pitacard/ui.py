@@ -22,7 +22,7 @@
 import os.path
 import gtk, gtk.glade
 import stackio, csvio
-import review_mode, options, profile, save_file_mgr
+import edit_mode, review_mode, options, profile, save_file_mgr, util
 from model import *
 
 def get_text(buffer):
@@ -34,8 +34,6 @@ class UI:
             self.quit()
             return True
 
-    def 
-
     def __init__(self, gladefile, cfg):
         self.config = cfg
         self.profile = profile.Profile()
@@ -43,30 +41,25 @@ class UI:
         self.gladefile = gladefile
         self.xml = gtk.glade.XML(self.gladefile, 'main_window')
 
-        widgets = ['main_window',
-                   'edit_card_button',
-                   'delete_card_button',
-                   'do_review_button',
-                   'edit_card_menu',
-                   'delete_card_menu',
-                   'review_menu',
-                   'statusbar_left',
-                   'statusbar_right',
-                   'review_frame',
-                   'card_list_frame',
-                   'card_list',
-                   'front_text_view',
-                   'back_text_view',
-                   'review_toolbar',
-                   'edit_toolbar',
-                   'mainmenu_cards',
-                   'mainmenu_review',
-                   'toolbar_socket',
-                   'review_socket']
-
-        for widget in widgets:
-            setattr(self, widget, 
-                    self.xml.get_widget(widget))
+        util.link_widgets(self.xml,
+                          self,
+                          ['card_list',
+                           'delete_card_button',
+                           'delete_card_menu',
+                           'do_review_button',
+                           'edit_card_button',
+                           'edit_card_menu',
+                           'edit_frame',
+                           'edit_toolbar',
+                           'mainmenu_cards',
+                           'mainmenu_review',
+                           'main_window',
+                           'review_frame',
+                           'review_menu',
+                           'review_toolbar',
+                           'statusbar_left',
+                           'statusbar_right',
+                           ])
 
         self.main_window.connect("delete_event", self.delete_event)
 
@@ -84,41 +77,35 @@ class UI:
             self.main_window.resize(500, 500)
             self.main_window.move(380, 150)
 
-        self.init_card_list()
-
         self.xml.signal_autoconnect({
-            'on_gpl_activate' :
-            lambda x: self.gpldisplay(),
-            'on_about_activate' :
-            lambda x: self.about(),
-            'on_review_menu_activate' :
-            lambda x: self.enter_review_mode(),
-            'on_do_review_button_clicked' :
-            lambda x: self.enter_review_mode(),
-            'on_review_done_button_clicked' :
-            lambda x: self.enter_edit_mode(),
-            'on_review_done_menu_activate' :
-            lambda x: self.enter_edit_mode(),
-            'on_save_menu_activate' :
-            lambda x: self.save(),
-            'on_save_as_menu_activate' :
-            lambda x: self.save_as(),
-            'on_new_menu_activate':
-            lambda x: self.new(),
-            'on_open_menu_activate' :
-            lambda x: self.open(),
-            'on_quit_menu_activate' :
-            lambda x: self.quit(),
-            'on_card_list_row_activated' :
-            lambda v,p,c: self.edit_selected_card(),
-            'on_card_list_cursor_changed' :
-            lambda x: self.sync_ui()
-            })
+                'on_gpl_activate' :
+                    lambda x: self.gpldisplay(),
+                'on_about_activate' :
+                    lambda x: self.about(),
+                'on_review_menu_activate' :
+                    lambda x: self.enter_review_mode(),
+                'on_do_review_button_clicked' :
+                    lambda x: self.enter_review_mode(),
+                'on_review_done_button_clicked' :
+                    lambda x: self.enter_edit_mode(),
+                'on_review_done_menu_activate' :
+                    lambda x: self.enter_edit_mode(),
+                'on_save_menu_activate' :
+                    lambda x: self.save(),
+                'on_save_as_menu_activate' :
+                    lambda x: self.save_as(),
+                'on_new_menu_activate':
+                    lambda x: self.new(),
+                'on_open_menu_activate' :
+                    lambda x: self.open(),
+                'on_quit_menu_activate' :
+                    lambda x: self.quit(),
+                })
 
-        self.editor = edit_mode.EditMode(self.xml)
-        self.reviewer = review_mode.ReviewMode(self.xml, 
-                                               lambda: self.card_list.get_model())
+        self.editor = edit_mode.EditMode(self)
+        self.reviewer = review_mode.ReviewMode(self) 
 
+        self.enter_edit_mode()
         self.sync_ui()
 
     def new(self):
@@ -127,7 +114,6 @@ class UI:
     def new_handler(self):
         self.profile = profile.Profile()
         self.card_list.get_model().clear()
-        self.connect_model()
         return save_file_mgr.SaveFileMgr.OK
 
     def save(self):
@@ -148,55 +134,8 @@ class UI:
     def open_handler(self, filename):
         self.profile, model = stackio.load(filename)
         self.card_list.set_model(model)
-        self.connect_model()
         return save_file_mgr.SaveFileMgr.OK
         
-    def init_card_list(self):
-        self.card_list = self.xml.get_widget('card_list')
-
-        col = gtk.TreeViewColumn('Front')
-        cell = gtk.CellRendererText()
-        cell.set_fixed_height_from_font(1)
-        col.pack_start(cell, True)
-        col.add_attribute(cell, 'text', FRONT_CIDX)
-        col.set_sort_column_id(FRONT_CIDX)
-        self.card_list.append_column(col)
-
-        col = gtk.TreeViewColumn('Back')
-        cell = gtk.CellRendererText()
-        cell.set_fixed_height_from_font(1)
-        col.pack_start(cell, True)
-        col.add_attribute(cell, 'text', BACK_CIDX)
-        col.set_sort_column_id(BACK_CIDX)
-        self.card_list.append_column(col)
-
-        col = gtk.TreeViewColumn('Bin')
-        cell = gtk.CellRendererText()
-        col.pack_start(cell, True)
-        col.add_attribute(cell, 'text', BIN_CIDX)
-        col.set_sort_column_id(BIN_CIDX)
-        self.card_list.append_column(col)
-
-        col = gtk.TreeViewColumn('Type')
-        cell = gtk.CellRendererText()
-        #cell.set_property('fontstyle', 'italic')
-        col.pack_start(cell, True)
-        col.add_attribute(cell, 'text', TYPE_CIDX)
-        col.set_sort_column_id(TYPE_CIDX)
-        self.card_list.append_column(col)        
-
-        self.card_list.set_model(new_model())
-        self.connect_model()
-
-    def connect_model(self):
-        model = self.card_list.get_model()
-        model.connect('row-changed',
-                      lambda m,p,i: self.save_file_mgr.flag_change())
-        model.connect('row-deleted',
-                      lambda m,p: self.save_file_mgr.flag_change())
-        model.connect('row-inserted',
-                      lambda m,p,i: self.save_file_mgr.flag_change())
-
     def sync_ui(self):
         cardlen = len(self.card_list.get_model())
         if cardlen == 1:
@@ -231,6 +170,8 @@ class UI:
 
         self.statusbar_left.set_label(file_status.strip())
 
+        self.editor.sync_ui()
+
     #def deck_changed(self):
     #    self.save_file_mgr.flag_change()
     #    self.sync_ui()
@@ -256,38 +197,22 @@ class UI:
         dlg.destroy()
 
     def enter_edit_mode(self):
-        # TODO: Mode changes should do the menus too
-
-        self.toolbar_socket.remove(self.review_toolbar)
-        self.ui_socket.remove(self.review_frame)
-
-        self.toolbar_socket.add(self.card_list_toolbar)
-        self.toolbar_socket.add(self.card_list_frame)
-        '''
         self.review_frame.hide()
         self.review_toolbar.hide()
         self.mainmenu_review.hide()
 
-        self.card_list_frame.show()
+        self.edit_frame.show()
         self.edit_toolbar.show()
         self.mainmenu_cards.show()
-        '''
 
     def enter_review_mode(self):
-        self.toolbar_socket.remove(self.card_list_toolbar)
-        self.ui_socket.remove(self.card_list_frame)
-
-        self.toolbar_socket.add(self.review_toolbar)
-        self.ui_socket.add(self.review_frame)
-        '''
         self.review_frame.show()
         self.review_toolbar.show()
         self.mainmenu_review.show()
 
-        self.card_list_frame.hide()
+        self.edit_frame.hide()
         self.edit_toolbar.hide()
         self.mainmenu_cards.hide()
-        '''
 
         self.reviewer.start_review()
 
