@@ -20,13 +20,14 @@
 #     teal@mailshack.com
 
 import random
-import model, util
+import leitner, model, util
 
 class ReviewMode:
     cNumBins = 10
 
     def __init__(self, parent):
         self.parent = parent
+        self.curr_card = None
 
         parent.xml.signal_autoconnect({
                 'on_review_show_button_clicked' :
@@ -68,14 +69,22 @@ class ReviewMode:
 
     def _answered(self, correct):
         # TODO: Build up success stats
-        # TODO: update leitner stats
+
+        assert not self.curr_card is None
+
+        if correct:
+            self.curr_card[model.BIN_CIDX] = min(ReviewMode.cNumBins - 1,
+                                                 self.curr_card[model.BIN_CIDX] + 1)
+        else:
+            self.curr_card[model.BIN_CIDX] = 0
+
         self._show_next_card()
 
     def _show_next_card(self):
         if len(self.parent.card_list.get_model()) == 0:
             return
 
-        self.curr_card = self._get_next_card_leitner()
+        self.curr_card = self._get_next_card()
         self.front_text_view.get_buffer().set_text(self.curr_card[model.FRONT_CIDX])
         self.back_text_view.get_buffer().set_text('')
 
@@ -86,27 +95,8 @@ class ReviewMode:
         self.incorrect_button.set_sensitive(False)
         self.incorrect_menu.set_sensitive(False)
 
-    def _bin_value(self, bin):
-        assert bin in range(ReviewMode.cNumBins), 'bin %d not in range (0,%d)' % (bin,ReviewMode.cNumBins)
-        inv = ReviewMode.cNumBins - bin
-        return 2**inv   #causes cards with a lower bin to be exponentially higher than those with a higher bin.
-
-    def _get_next_card_leitner(self):
-        assert len(self.parent.card_list.get_model()) > 0
-
-        # count total bin number of all cards
-        sum = 0
-        for card in self.parent.card_list.get_model():
-            sum += self._bin_value(card[model.BIN_CIDX])
-            
-        # rand in that total bin number
-        count = random.randint(0, sum - 1)
+    def _get_next_card(self):
+        cards = self.parent.card_list.get_model()
+        assert len(cards) > 0
+        return cards[leitner.next_card_index(cards, ReviewMode.cNumBins)]
         
-        # index into cards
-        idx = 0
-        _bin_value = self._bin_value(self.parent.card_list.get_model()[idx][model.BIN_CIDX])
-        while count - _bin_value > 0:
-            count -= _bin_value
-            idx += 1
-            _bin_value = self._bin_value(self.parent.card_list.get_model()[idx][model.BIN_CIDX])
-        return self.parent.card_list.get_model()[idx]

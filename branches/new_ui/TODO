@@ -1,3 +1,5 @@
-* The selection algorithm needs verification
-* Review mode doesn't seem to be flagging changes properly...I was not prompted to save when 
-quitting after a review.
+* Save-on-quit needs a "cancel" option
+* Options for review:
+  - Maximum cards to review
+  - max review time
+  - range of bins to review

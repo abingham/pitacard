@@ -18,98 +18,33 @@
 # You can reach the author at:
 #     austin.bingham@gmail.com
 
-from math import *
 import random
-import gtk, gtk.glade
 import model
 
-class Leitner:
-    def __init__(self, gladefile, cards, bins=10):
-        assert len(cards) > 0, 'No cards in deck supplier to Leitner review'
-        
-        self.cards = cards
-        self.num_bins = bins
+def _bin_value(bin, num_bins):
+    assert bin in range(num_bins), 'bin %d not in range (0,%d)' % (bin, num_bins)
+    inv = num_bins - bin
+    return 2**inv   #causes cards with a lower bin to be exponentially higher than those with a higher bin.
 
-        xml = gtk.glade.XML(gladefile, 'ReviewDlg')
-        self.dlg = xml.get_widget('ReviewDlg')
-        self.next_button = xml.get_widget('next_button')
-        self.correct_button = xml.get_widget('correct_button')
-        self.wrong_button = xml.get_widget('wrong_button')
-        self.front_text = xml.get_widget('front_text')
-        self.back_text = xml.get_widget('back_text')
+def next_card_index(cards, num_bins):
+    if len(cards) < 1:
+        return -1
 
-        self.dlg.resize(500,500)
-
-        if len(self.cards) < 1: self.next_button.set_sensitive(False)
-        self.correct_button.set_sensitive(False)
-        self.wrong_button.set_sensitive(False)
-
-        xml.signal_autoconnect({
-            'on_next_button_clicked' :
-            lambda x: self.flip_card(),
-            'on_correct_button_clicked' :
-            lambda x: self.answered(True),
-            'on_wrong_button_clicked' :
-            lambda x: self.answered(False)
-            })
-
-        # initialize view to first card
-        self.show_next_card()
-
-        self.dlg.run()
-        self.dlg.destroy()
-
-    def answered(self, correct):
-        self.update_card(self.curr_card, correct)
-        self.show_next_card()
-
-    def flip_card(self):
-        self.back_text.get_buffer().set_text(self.curr_card[model.BACK_IDX])
-        self.correct_button.set_sensitive(True)
-        self.wrong_button.set_sensitive(True)
-        self.next_button.set_sensitive(False)
-        
-    def show_next_card(self):
-        self.curr_card = self.get_next_card()
-        self.front_text.get_buffer().set_text(self.curr_card[model.FRONT_IDX])
-        self.back_text.get_buffer().set_text('')
-
-        self.correct_button.set_sensitive(False)
-        self.wrong_button.set_sensitive(False)
-        self.next_button.set_sensitive(True)
-
-    def have_cards(self):
-        return len(self.cards) > 0
-
-    def bin_value(self, bin):
-        assert bin in range(self.num_bins), 'bin %d not in range (0,%d)' % (bin,self.num_bins)
-        inv = self.num_bins - bin
-        return 2**inv
-
-    def get_next_card(self):
-        # count cards w/ values
-        sum = 0
-        for card in self.cards:
-            sum += self.bin_value(card[model.BIN_IDX])
+    # count total bin number of all cards
+    sum = 0
+    for card in cards:
+        sum += _bin_value(card[model.BIN_CIDX], num_bins)
             
-        # rand in that range
-        count = random.randint(0, sum - 1)
+    # rand in that total bin number
+    count = random.randint(0, sum - 1)
         
-        # index into cards
-        idx = 0
-        bin_value = self.bin_value(self.cards[idx][model.BIN_IDX])
-        while count - bin_value > 0:
-            count -= bin_value
-            idx += 1
-            bin_value = self.bin_value(self.cards[idx][model.BIN_IDX])
+    # index into cards
+    idx = 0
+    bin_value = _bin_value(cards[idx][model.BIN_CIDX], num_bins)
+    while count - bin_value > 0:
+        count -= bin_value
+        idx += 1
+        bin_value = _bin_value(cards[idx][model.BIN_CIDX], num_bins)
 
-        return self.cards[idx]
-
-    def update_card(self, card, correct):
-        if correct:
-            new_bin = min(self.num_bins - 1,
-                          card[model.BIN_IDX] + 1)
-        else:
-            new_bin = 0
-
-        card[model.BIN_IDX] = new_bin
+    assert idx < len(cards)
+    return idx
