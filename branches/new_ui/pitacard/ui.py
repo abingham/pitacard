@@ -152,13 +152,12 @@ class UI:
         sel = self.card_list.get_selection()
         model,iter = sel.get_selected()
 
-        have_selected = not not iter
         # only edit or delete if there is a selected card
-        self.edit_card_button.set_sensitive(have_selected)
-        self.delete_card_button.set_sensitive(have_selected)
+        self.edit_card_button.set_sensitive(have_cards)
+        self.delete_card_button.set_sensitive(have_cards)
 
-        self.edit_card_menu.set_sensitive(have_selected)
-        self.delete_card_menu.set_sensitive(have_selected)
+        self.edit_card_menu.set_sensitive(have_cards)
+        self.delete_card_menu.set_sensitive(have_cards)
 
         if self.save_file_mgr.filename:
             file_status = os.path.basename(self.save_file_mgr.filename)

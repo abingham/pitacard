@@ -43,9 +43,13 @@ class ReviewMode:
                           self,
                           ['front_text_view',
                            'back_text_view',
-                           ('review_show_button', 'show_button'),
-                           ('review_correct_button', 'correct_button'),
-                           ('review_incorrect_button', 'incorrect_button')
+                           ('review_show_button',      'show_button'),
+                           ('review_correct_button',   'correct_button'),
+                           ('review_incorrect_button', 'incorrect_button'),
+                           ('review_correct_menu',     'correct_menu'),
+                           ('review_incorrect_menu',   'incorrect_menu'),
+                           ('review_show_menu',        'show_menu'),
+                           ('review_done_menu',        'done_menu')
                            ])
 
     def start_review(self):
@@ -56,8 +60,11 @@ class ReviewMode:
         self.back_text_view.get_buffer().set_text(self.curr_card[model.BACK_CIDX])
 
         self.show_button.set_sensitive(False)
+        self.show_menu.set_sensitive(False)
         self.correct_button.set_sensitive(True)
+        self.correct_menu.set_sensitive(True)
         self.incorrect_button.set_sensitive(True)
+        self.incorrect_menu.set_sensitive(True)
 
     def _answered(self, correct):
         # TODO: Build up success stats
@@ -73,8 +80,11 @@ class ReviewMode:
         self.back_text_view.get_buffer().set_text('')
 
         self.show_button.set_sensitive(True)
+        self.show_menu.set_sensitive(True)
         self.correct_button.set_sensitive(False)
+        self.correct_menu.set_sensitive(False)
         self.incorrect_button.set_sensitive(False)
+        self.incorrect_menu.set_sensitive(False)
 
     def _bin_value(self, bin):
         assert bin in range(ReviewMode.cNumBins), 'bin %d not in range (0,%d)' % (bin,ReviewMode.cNumBins)
