@@ -82,14 +82,6 @@ class UI:
                     lambda x: self.gpldisplay(),
                 'on_about_activate' :
                     lambda x: self.about(),
-                'on_review_menu_activate' :
-                    lambda x: self.enter_review_mode(),
-                'on_do_review_button_clicked' :
-                    lambda x: self.enter_review_mode(),
-                'on_review_done_button_clicked' :
-                    lambda x: self.enter_edit_mode(),
-                'on_review_done_menu_activate' :
-                    lambda x: self.enter_edit_mode(),
                 'on_save_menu_activate' :
                     lambda x: self.save(),
                 'on_save_as_menu_activate' :
@@ -132,8 +124,12 @@ class UI:
         self.save_file_mgr.open(filename)
 
     def open_handler(self, filename):
+        self.enter_edit_mode()
+        
         self.profile, model = stackio.load(filename)
-        self.card_list.set_model(model)
+        self.card_list.get_model().clear()
+        for row in model:
+            self.card_list.get_model().append(row)
         return save_file_mgr.SaveFileMgr.OK
         
     def sync_ui(self):
@@ -171,16 +167,6 @@ class UI:
 
         self.editor.sync_ui()
 
-    #def deck_changed(self):
-    #    self.save_file_mgr.flag_change()
-    #    self.sync_ui()
-
-    #def front_edited(self, cell, path, new_text):
-    #    self.card_list.get_model()[path][FRONT_CIDX] = new_text
-
-    #def back_edited(self, cell, path, new_text):
-    #    self.card_list.get_model()[path][BACK_CIDX] = new_text
-
     def gpldisplay(self):
         xml = gtk.glade.XML(self.gladefile, 'GPLDlg')
         dlg = xml.get_widget('GPLDlg')
@@ -196,23 +182,12 @@ class UI:
         dlg.destroy()
 
     def enter_edit_mode(self):
-        self.review_frame.hide()
-        self.review_toolbar.hide()
-        self.mainmenu_review.hide()
-
-        self.edit_frame.show()
-        self.edit_toolbar.show()
-        self.mainmenu_cards.show()
+        self.reviewer.exit_mode()
+        self.editor.enter_mode()
 
     def enter_review_mode(self):
-        self.review_frame.show()
-        self.review_toolbar.show()
-        self.mainmenu_review.show()
-
-        self.edit_frame.hide()
-        self.edit_toolbar.hide()
-        self.mainmenu_cards.hide()
-
+        self.editor.exit_mode()
+        self.reviewer.enter_mode()
         self.reviewer.start_review()
 
     def quit(self):

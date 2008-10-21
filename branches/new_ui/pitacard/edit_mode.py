@@ -8,10 +8,14 @@ class EditMode:
         util.link_widgets(self.parent.xml,
                           self,
                           ['card_list',
+                           'edit_frame',
+                           'edit_toolbar',
+                           'mainmenu_cards',
                            'add_card_button',
                            'edit_card_button',
                            'delete_card_button',
-                           'do_review_button'])
+                           'do_review_button',
+                           ])
 
         self.parent.xml.signal_autoconnect({
                 'on_add_card_button_clicked' :
@@ -30,11 +34,23 @@ class EditMode:
                     lambda x: self.parent.enter_review_mode(),
                 'on_card_list_row_activated' :
                     lambda v,p,c: self.edit_selected_card(),
-                #'on_card_list_cursor_changed' :
-                #    lambda x: self.sync_ui()
+                'on_review_menu_activate' :
+                    lambda x: self.parent.enter_review_mode(),
+                'on_do_review_button_clicked' :
+                    lambda x: self.parent.enter_review_mode(),
                 })
 
         self.init_card_list()
+
+    def enter_mode(self):
+        self.edit_frame.show()
+        self.edit_toolbar.show()
+        self.mainmenu_cards.show()
+
+    def exit_mode(self):
+        self.edit_frame.hide()
+        self.edit_toolbar.hide()
+        self.mainmenu_cards.hide()
 
     def init_card_list(self):
         col = gtk.TreeViewColumn('Front')

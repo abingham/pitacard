@@ -19,15 +19,73 @@
 #     austin.bingham@gmail.com
 #     teal@mailshack.com
 
-import random
+import datetime, random
 import leitner, model, util
 
+class Settings:
+    '''
+    settings that apply to all reviews. These are referred to
+    in all reviews, and generally control the behavior of
+    the review.
+    '''
+    def __init__(self,
+                 max_count = None,
+                 max_time = None):
+        self.max_count = max_count
+        self.max_time = max_time # minutes
+        # TODO: Permitted bins
+
+class Session:
+    '''
+    This represents a per-review set of data. It basically tracks
+    review statistics, elapsed time, and other data that needs
+    to be reset for each review.
+    '''
+    def __init__(self, settings):
+        self.settings = settings
+        self.total = 0
+        self.correct = 0
+        self.start_time = 0
+        self.stats_displayed = False
+
+    def _elapsed_time(self):
+        return datetime.datetime.now() - self.start_time
+
+    def _is_finished(self):
+        if not self.max_count is None:
+            if self.total >= self.max_count:
+                return True
+
+        if not self.max_time is None:
+            if self.elapsed_time >= datetime.timedelta(minutes=self.max_time):
+                return True
+
+    def reset(self):
+        self.total = 0
+        self.correct = 0
+        self.start_time = datetime.datetime.now()
+        self.stats_displayed = False
+
+    def answered(self, correct):
+        self.total += 1
+        if correct:
+            self.correct += 1
+
+    max_count = property(lambda s: s.settings.max_count)
+    max_time = property(lambda s: s.settings.max_time)
+    finished = property(_is_finished)
+    elapsed_time = property(_elapsed_time)
+
+    
 class ReviewMode:
     cNumBins = 10
 
     def __init__(self, parent):
         self.parent = parent
         self.curr_card = None
+
+        self.settings = Settings()
+        self.session = Session(self.settings)
 
         parent.xml.signal_autoconnect({
                 'on_review_show_button_clicked' :
@@ -36,14 +94,19 @@ class ReviewMode:
                     lambda x: self._answered(True),
                 'on_review_incorrect_button_clicked' :
                     lambda x: self._answered(False),
-                #'on_review_done_button_clicked' :
-                    #    lambda x: self.done
+                'on_review_done_button_clicked' :
+                    lambda x: self._handle_done(),
+                'on_review_done_menu_activate':
+                    lambda x: self._handle_done(),
                 })
 
         util.link_widgets(self.parent.xml,
                           self,
                           ['front_text_view',
                            'back_text_view',
+                           'review_frame',
+                           'review_toolbar',
+                           'mainmenu_review',
                            ('review_show_button',      'show_button'),
                            ('review_correct_button',   'correct_button'),
                            ('review_incorrect_button', 'incorrect_button'),
@@ -53,8 +116,25 @@ class ReviewMode:
                            ('review_done_menu',        'done_menu')
                            ])
 
+    def enter_mode(self):
+        self.review_frame.show()
+        self.review_toolbar.show()
+        self.mainmenu_review.show()
+
+    def exit_mode(self):
+        self.review_frame.hide()
+        self.review_toolbar.hide()
+        self.mainmenu_review.hide()
+
     def start_review(self):
+        self.session.reset()
         self._show_next_card()
+
+    def _handle_done(self):
+        if not self.session.stats_displayed:
+            self._show_stats()
+        else:
+            self.parent.enter_edit_mode()
 
     def _show_answer(self):
         assert len(self.parent.card_list.get_model()) > 0
@@ -68,9 +148,10 @@ class ReviewMode:
         self.incorrect_menu.set_sensitive(True)
 
     def _answered(self, correct):
-        # TODO: Build up success stats
-
+        assert not self.session is None
         assert not self.curr_card is None
+
+        self.session.answered(correct)
 
         if correct:
             self.curr_card[model.BIN_CIDX] = min(ReviewMode.cNumBins - 1,
@@ -78,7 +159,38 @@ class ReviewMode:
         else:
             self.curr_card[model.BIN_CIDX] = 0
 
-        self._show_next_card()
+        if self.session.finished:
+            self._show_stats()
+        else:
+            self._show_next_card()
+
+    def _show_stats(self):
+        assert not self.session is None
+        
+        self.show_button.set_sensitive(False)
+        self.show_menu.set_sensitive(False)
+        self.correct_button.set_sensitive(False)
+        self.correct_menu.set_sensitive(False)
+        self.incorrect_button.set_sensitive(False)
+        self.incorrect_menu.set_sensitive(False)
+
+        self.back_text_view.get_buffer().set_text('')
+
+        if self.session.total == 0:
+            perc_correct = 100
+        else:
+            perc_correct = self.session.correct / self.session.total * 100
+
+        self.front_text_view.get_buffer().set_text('''Total answered: %s
+Total correct: %s
+Percent correct: %s 
+Study time: %s
+''' % (self.session.total, 
+       self.session.correct, 
+       perc_correct,
+       self.session.elapsed_time.seconds / 60.0))
+
+        self.session.stats_displayed = True
 
     def _show_next_card(self):
         if len(self.parent.card_list.get_model()) == 0:
