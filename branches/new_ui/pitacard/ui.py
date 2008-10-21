@@ -61,6 +61,9 @@ class UI:
                            'statusbar_right',
                            ])
 
+        self.accel_group = gtk.AccelGroup()
+        self.main_window.add_accel_group(self.accel_group)
+
         self.main_window.connect("delete_event", self.delete_event)
 
         self.save_file_mgr = save_file_mgr.SaveFileMgr(self.main_window,
@@ -141,19 +144,15 @@ class UI:
 
         have_cards = cardlen > 0
 
-        # only review if there is at least one card
-        self.do_review_button.set_sensitive(have_cards)
-        self.review_menu.set_sensitive(have_cards)
+        # TODO: mode-specific ui-syncing should be moved into the
+        # mode implementations
 
-        sel = self.card_list.get_selection()
-        model,iter = sel.get_selected()
+        # only review if there is at least one card
+        self.editor.do_review_action.set_sensitive(have_cards)
 
         # only edit or delete if there is a selected card
-        self.edit_card_button.set_sensitive(have_cards)
-        self.delete_card_button.set_sensitive(have_cards)
-
-        self.edit_card_menu.set_sensitive(have_cards)
-        self.delete_card_menu.set_sensitive(have_cards)
+        self.editor.edit_action.set_sensitive(have_cards)
+        self.editor.delete_action.set_sensitive(have_cards)
 
         if self.save_file_mgr.filename:
             file_status = os.path.basename(self.save_file_mgr.filename)

@@ -4,4 +4,4 @@
   - Maximum cards to review
   - max review time
   - range of bins to review
-* See about using Actions rather than Toolbar button and menu entries
+* new actions don't have accelerators yet

@@ -11,36 +11,79 @@ class EditMode:
                            'edit_frame',
                            'edit_toolbar',
                            'mainmenu_cards',
-                           'add_card_button',
-                           'edit_card_button',
-                           'delete_card_button',
-                           'do_review_button',
                            ])
 
         self.parent.xml.signal_autoconnect({
-                'on_add_card_button_clicked' :
-                    lambda x: self.add_card(),
-                'on_add_card_menu_activate' :
-                    lambda x: self.add_card(),
-                'on_edit_card_button_clicked' :
-                    lambda x: self.edit_selected_card(),
-                'on_edit_card_menu_activate' :
-                    lambda x: self.edit_selected_card(),
-                'on_delete_card_button_clicked' :
-                    lambda x: self.delete_selected_card(),
-                'on_delete_card_menu_activate' :
-                    lambda x: self.delete_selected_card(),
-                'on_do_review_button_clicked' :
-                    lambda x: self.parent.enter_review_mode(),
                 'on_card_list_row_activated' :
                     lambda v,p,c: self.edit_selected_card(),
-                'on_review_menu_activate' :
-                    lambda x: self.parent.enter_review_mode(),
-                'on_do_review_button_clicked' :
-                    lambda x: self.parent.enter_review_mode(),
                 })
 
         self.init_card_list()
+
+        self.init_actions()
+        self.init_menu()
+        self.init_toolbar()
+
+    def init_actions(self):
+        self.action_group = gtk.ActionGroup('edit_mode_action_group')
+
+        actions = []
+        actions.append(('add_action',
+                        'add_card_action',
+                        'Add',
+                        'Add a card to the deck',
+                        gtk.STOCK_ADD,
+                        '<Control>a',
+                        lambda x: self.add_card()))
+        actions.append(('edit_action',
+                        'edit_card_action',
+                        'Edit',
+                        'Edit a card',
+                        gtk.STOCK_EDIT,
+                        '<Control>e',
+                        lambda x: self.edit_selected_card()))
+        actions.append(('delete_action',
+                        'delete_card_action',
+                        'Delete',
+                        'Delete a card',
+                        gtk.STOCK_DELETE,
+                        '<Control>d',
+                        lambda x: self.delete_selected_card()))
+
+        actions.append(('do_review_action',
+                        'do_review_action',
+                        'Review',
+                        'Start a review session',
+                        gtk.STOCK_EXECUTE,
+                        '<Control>r',
+                        lambda x: self.parent.enter_review_mode()))
+
+        for action in actions:
+            a = gtk.Action(action[1],
+                           action[2],
+                           action[3],
+                           action[4])
+            setattr(self, action[0], a)
+            self.action_group.add_action_with_accel(a, action[5])
+            a.set_accel_group(self.parent.accel_group)
+            a.connect_accelerator()
+            a.connect('activate', action[6])
+
+    def init_menu(self):
+        m = self.mainmenu_cards.get_submenu()
+        m.append(self.add_action.create_menu_item())
+        m.append(self.edit_action.create_menu_item())
+        m.append(self.delete_action.create_menu_item())
+        m.append(gtk.SeparatorMenuItem())
+        m.append(self.do_review_action.create_menu_item())
+
+    def init_toolbar(self):
+        t = self.edit_toolbar
+        t.insert(self.add_action.create_tool_item(), -1)
+        t.insert(self.edit_action.create_tool_item(), -1)
+        t.insert(self.delete_action.create_tool_item(), -1)
+        t.insert(gtk.SeparatorToolItem(), -1)
+        t.insert(self.do_review_action.create_tool_item(), -1)        
 
     def enter_mode(self):
         self.edit_frame.show()
@@ -190,6 +233,6 @@ class EditMode:
     def sync_ui(self):
         num_cards = len(self.card_list.get_model())
         have_cards = num_cards > 0
-        self.edit_card_button.set_sensitive(have_cards)
-        self.delete_card_button.set_sensitive(have_cards)
-        self.do_review_button.set_sensitive(have_cards)
+        self.edit_action.set_sensitive(have_cards)
+        self.delete_action.set_sensitive(have_cards)
+        self.do_review_action.set_sensitive(have_cards)

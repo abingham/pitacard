@@ -81,53 +81,6 @@
                 <signal name="activate" handler="on_card1_activate"/>
                 <child>
                   <widget class="GtkMenu" id="mainmenu_cards_menu">
-                    <child>
-                      <widget class="GtkImageMenuItem" id="add_card_menu">
-                        <property name="visible">True</property>
-                        <property name="label">gtk-add</property>
-                        <property name="use_underline">True</property>
-                        <property name="use_stock">True</property>
-                        <signal name="activate" handler="on_add_card_menu_activate"/>
-                      </widget>
-                    </child>
-                    <child>
-                      <widget class="GtkImageMenuItem" id="edit_card_menu">
-                        <property name="visible">True</property>
-                        <property name="label">gtk-edit</property>
-                        <property name="use_underline">True</property>
-                        <property name="use_stock">True</property>
-                        <signal name="activate" handler="on_edit_card_menu_activate"/>
-                      </widget>
-                    </child>
-                    <child>
-                      <widget class="GtkImageMenuItem" id="delete_card_menu">
-                        <property name="visible">True</property>
-                        <property name="label">gtk-delete</property>
-                        <property name="use_underline">True</property>
-                        <property name="use_stock">True</property>
-                        <signal name="activate" handler="on_delete_card_menu_activate"/>
-                      </widget>
-                    </child>
-                    <child>
-                      <widget class="GtkSeparatorMenuItem" id="separator1">
-                        <property name="visible">True</property>
-                      </widget>
-                    </child>
-                    <child>
-                      <widget class="GtkImageMenuItem" id="review_menu">
-                        <property name="visible">True</property>
-                        <property name="label" translatable="yes">_Review</property>
-                        <property name="use_underline">True</property>
-                        <signal name="activate" handler="on_review_menu_activate"/>
-                        <child internal-child="image">
-                          <widget class="GtkImage" id="image121">
-                            <property name="visible">True</property>
-                            <property name="stock">gtk-execute</property>
-                            <property name="icon_size">1</property>
-                          </widget>
-                        </child>
-                      </widget>
-                    </child>
                   </widget>
                 </child>
               </widget>
@@ -139,58 +92,6 @@
                 <child>
                   <widget class="GtkMenu" id="menu1">
                     <property name="visible">True</property>
-                    <child>
-                      <widget class="GtkImageMenuItem" id="review_show_menu">
-                        <property name="visible">True</property>
-                        <property name="label" translatable="yes">Show</property>
-                        <property name="use_underline">True</property>
-                        <child internal-child="image">
-                          <widget class="GtkImage" id="menu-item-image4">
-                            <property name="visible">True</property>
-                            <property name="stock">gtk-ok</property>
-                          </widget>
-                        </child>
-                      </widget>
-                    </child>
-                    <child>
-                      <widget class="GtkImageMenuItem" id="review_correct_menu">
-                        <property name="visible">True</property>
-                        <property name="label" translatable="yes">Correct</property>
-                        <property name="use_underline">True</property>
-                        <child internal-child="image">
-                          <widget class="GtkImage" id="menu-item-image5">
-                            <property name="visible">True</property>
-                            <property name="stock">gtk-apply</property>
-                          </widget>
-                        </child>
-                      </widget>
-                    </child>
-                    <child>
-                      <widget class="GtkImageMenuItem" id="review_incorrect_menu">
-                        <property name="visible">True</property>
-                        <property name="label" translatable="yes">Incorrect</property>
-                        <property name="use_underline">True</property>
-                        <child internal-child="image">
-                          <widget class="GtkImage" id="menu-item-image6">
-                            <property name="visible">True</property>
-                            <property name="stock">gtk-cancel</property>
-                          </widget>
-                        </child>
-                      </widget>
-                    </child>
-                    <child>
-                      <widget class="GtkImageMenuItem" id="review_done_menu">
-                        <property name="visible">True</property>
-                        <property name="label" translatable="yes">Done</property>
-                        <property name="use_underline">True</property>
-                        <signal name="activate" handler="on_review_done_menu_activate"/>
-                        <child internal-child="image">
-                          <widget class="GtkImage" id="menu-item-image7">
-                            <property name="stock">gtk-close</property>
-                          </widget>
-                        </child>
-                      </widget>
-                    </child>
                   </widget>
                 </child>
               </widget>
@@ -247,75 +148,6 @@
             <property name="visible">True</property>
             <property name="toolbar_style">GTK_TOOLBAR_BOTH</property>
             <child>
-              <widget class="GtkToolButton" id="add_card_button">
-                <property name="visible">True</property>
-                <property name="tooltip" translatable="yes">Add a new card (shortcut: ctrl-a)</property>
-                <property name="label" translatable="yes">Add</property>
-                <property name="use_underline">True</property>
-                <property name="stock_id">gtk-add</property>
-                <signal name="clicked" handler="on_add_card_button_clicked"/>
-                <accelerator key="a" modifiers="GDK_CONTROL_MASK" signal="clicked"/>
-              </widget>
-              <packing>
-                <property name="expand">False</property>
-              </packing>
-            </child>
-            <child>
-              <widget class="GtkToolButton" id="edit_card_button">
-                <property name="visible">True</property>
-                <property name="sensitive">False</property>
-                <property name="tooltip" translatable="yes">Edit selected card (shortcut: ctrl-e)</property>
-                <property name="label" translatable="yes">Edit</property>
-                <property name="use_underline">True</property>
-                <property name="stock_id">gtk-edit</property>
-                <signal name="clicked" handler="on_edit_card_button_clicked"/>
-                <accelerator key="e" modifiers="GDK_CONTROL_MASK" signal="clicked"/>
-              </widget>
-              <packing>
-                <property name="expand">False</property>
-              </packing>
-            </child>
-            <child>
-              <widget class="GtkToolButton" id="delete_card_button">
-                <property name="visible">True</property>
-                <property name="sensitive">False</property>
-                <property name="tooltip" translatable="yes">Delete selected card (shortcut: ctrl-d)</property>
-                <property name="label" translatable="yes">Delete</property>
-                <property name="use_underline">True</property>
-                <property name="stock_id">gtk-delete</property>
-                <signal name="clicked" handler="on_delete_card_button_clicked"/>
-                <accelerator key="Delete" modifiers="" signal="clicked"/>
-                <accelerator key="d" modifiers="GDK_CONTROL_MASK" signal="clicked"/>
-              </widget>
-              <packing>
-                <property name="expand">False</property>
-              </packing>
-            </child>
-            <child>
-              <widget class="GtkSeparatorToolItem" id="separatortoolitem1">
-                <property name="visible">True</property>
-              </widget>
-              <packing>
-                <property name="expand">False</property>
-                <property name="homogeneous">False</property>
-              </packing>
-            </child>
-            <child>
-              <widget class="GtkToolButton" id="do_review_button">
-                <property name="visible">True</property>
-                <property name="sensitive">False</property>
-                <property name="tooltip" translatable="yes">Start a review session (shortcut: ctrl-r)</property>
-                <property name="label" translatable="yes">Review</property>
-                <property name="use_underline">True</property>
-                <property name="stock_id">gtk-execute</property>
-                <signal name="clicked" handler="on_do_review_button_clicked"/>
-                <accelerator key="r" modifiers="GDK_CONTROL_MASK" signal="clicked"/>
-              </widget>
-              <packing>
-                <property name="expand">False</property>
-              </packing>
-            </child>
-            <child>
               <widget class="GtkToolItem" id="toolitem2">
                 <property name="visible">True</property>
                 <child>
@@ -358,68 +190,6 @@
         <child>
           <widget class="GtkToolbar" id="review_toolbar">
             <property name="toolbar_style">GTK_TOOLBAR_BOTH</property>
-            <child>
-              <widget class="GtkToolButton" id="review_show_button">
-                <property name="visible">True</property>
-                <property name="tooltip" translatable="yes">Click to show answer (shortcut: s)</property>
-                <property name="label" translatable="yes">Show</property>
-                <property name="use_underline">True</property>
-                <property name="stock_id">gtk-ok</property>
-                <signal name="clicked" handler="on_review_show_button_clicked"/>
-                <accelerator key="s" modifiers="" signal="clicked"/>
-              </widget>
-              <packing>
-                <property name="expand">False</property>
-              </packing>
-            </child>
-            <child>
-              <widget class="GtkToolButton" id="review_correct_button">
-                <property name="visible">True</property>
-                <property name="tooltip" translatable="yes">Click to indicate a correct answer (shortcut: c)</property>
-                <property name="label" translatable="yes">Correct</property>
-                <property name="use_underline">True</property>
-                <property name="stock_id">gtk-apply</property>
-                <signal name="clicked" handler="on_review_correct_button_clicked"/>
-                <accelerator key="c" modifiers="" signal="clicked"/>
-              </widget>
-              <packing>
-                <property name="expand">False</property>
-              </packing>
-            </child>
-            <child>
-              <widget class="GtkToolButton" id="review_incorrect_button">
-                <property name="visible">True</property>
-                <property name="tooltip" translatable="yes">Click to indicate an incorrect answer (shortcut: i)</property>
-                <property name="label" translatable="yes">Incorrect</property>
-                <property name="use_underline">True</property>
-                <property name="stock_id">gtk-cancel</property>
-                <signal name="clicked" handler="on_review_incorrect_button_clicked"/>
-                <accelerator key="i" modifiers="" signal="clicked"/>
-              </widget>
-              <packing>
-                <property name="expand">False</property>
-              </packing>
-            </child>
-            <child>
-              <widget class="GtkSeparatorToolItem" id="separatortoolitem2">
-                <property name="visible">True</property>
-              </widget>
-              <packing>
-                <property name="expand">False</property>
-                <property name="homogeneous">False</property>
-              </packing>
-            </child>
-            <child>
-              <widget class="GtkToolButton" id="review_done_button">
-                <property name="visible">True</property>
-                <property name="label" translatable="yes">Done</property>
-                <property name="stock_id">gtk-close</property>
-                <signal name="clicked" handler="on_review_done_button_clicked"/>
-              </widget>
-              <packing>
-                <property name="expand">False</property>
-              </packing>
-            </child>
           </widget>
           <packing>
             <property name="expand">False</property>
@@ -626,25 +396,17 @@
             <property name="n_columns">2</property>
             <property name="column_spacing">4</property>
             <child>
-              <widget class="GtkLabel" id="ceb - ChooseBin - Text">
+              <widget class="GtkComboBox" id="type_combo">
                 <property name="visible">True</property>
-                <property name="label" translatable="yes">Bin</property>
+                <property name="items" translatable="yes">Irreversible
+Reversible
+Note</property>
               </widget>
               <packing>
-                <property name="x_options"></property>
-                <property name="y_options"></property>
-              </packing>
-            </child>
-            <child>
-              <widget class="GtkLabel" id="ceb - ChooseType - Text">
-                <property name="visible">True</property>
-                <property name="label" translatable="yes">Type</property>
-              </widget>
-              <packing>
+                <property name="left_attach">1</property>
+                <property name="right_attach">2</property>
                 <property name="top_attach">1</property>
                 <property name="bottom_attach">2</property>
-                <property name="x_options"></property>
-                <property name="y_options"></property>
               </packing>
             </child>
             <child>
@@ -667,17 +429,25 @@
               </packing>
             </child>
             <child>
-              <widget class="GtkComboBox" id="type_combo">
+              <widget class="GtkLabel" id="ceb - ChooseType - Text">
                 <property name="visible">True</property>
-                <property name="items" translatable="yes">Irreversible
-Reversible
-Note</property>
+                <property name="label" translatable="yes">Type</property>
               </widget>
               <packing>
-                <property name="left_attach">1</property>
-                <property name="right_attach">2</property>
                 <property name="top_attach">1</property>
                 <property name="bottom_attach">2</property>
+                <property name="x_options"></property>
+                <property name="y_options"></property>
+              </packing>
+            </child>
+            <child>
+              <widget class="GtkLabel" id="ceb - ChooseBin - Text">
+                <property name="visible">True</property>
+                <property name="label" translatable="yes">Bin</property>
+              </widget>
+              <packing>
+                <property name="x_options"></property>
+                <property name="y_options"></property>
               </packing>
             </child>
           </widget>

@@ -19,6 +19,7 @@
 #     austin.bingham@gmail.com
 #     teal@mailshack.com
 
+import gtk
 import datetime, random
 import leitner, model, util
 
@@ -87,19 +88,6 @@ class ReviewMode:
         self.settings = Settings()
         self.session = Session(self.settings)
 
-        parent.xml.signal_autoconnect({
-                'on_review_show_button_clicked' :
-                    lambda x: self._show_answer(),
-                'on_review_correct_button_clicked' :
-                    lambda x: self._answered(True),
-                'on_review_incorrect_button_clicked' :
-                    lambda x: self._answered(False),
-                'on_review_done_button_clicked' :
-                    lambda x: self._handle_done(),
-                'on_review_done_menu_activate':
-                    lambda x: self._handle_done(),
-                })
-
         util.link_widgets(self.parent.xml,
                           self,
                           ['front_text_view',
@@ -107,14 +95,70 @@ class ReviewMode:
                            'review_frame',
                            'review_toolbar',
                            'mainmenu_review',
-                           ('review_show_button',      'show_button'),
-                           ('review_correct_button',   'correct_button'),
-                           ('review_incorrect_button', 'incorrect_button'),
-                           ('review_correct_menu',     'correct_menu'),
-                           ('review_incorrect_menu',   'incorrect_menu'),
-                           ('review_show_menu',        'show_menu'),
-                           ('review_done_menu',        'done_menu')
                            ])
+
+        self.init_actions()
+        self.init_menu()
+        self.init_toolbar()
+
+    def init_actions(self):
+        self.action_group = gtk.ActionGroup('review_mode_action_group')
+
+        actions = []
+        actions.append(('show_action',
+                        'show_action',
+                        'Show',
+                        'Show next card',
+                        gtk.STOCK_OK,
+                        's',
+                        lambda x: self._show_answer()))
+        actions.append(('correct_action',
+                        'correct_action',
+                        'Correct',
+                        'Answer was correct',
+                        gtk.STOCK_APPLY,
+                        'c',
+                        lambda x: self._answered(True)))
+        actions.append(('incorrect_action',
+                        'incorrect_action',
+                        'Incorrect',
+                        'Answer was incorrect',
+                        gtk.STOCK_CANCEL,
+                        'i',
+                        lambda x: self._answered(False)))
+        actions.append(('done_action',
+                        'done_action',
+                        'Done',
+                        'End current review session',
+                        gtk.STOCK_CLOSE,
+                        'd',
+                        lambda x: self._handle_done()))
+
+        for action in actions:
+            a = gtk.Action(action[1],
+                           action[2],
+                           action[3],
+                           action[4])
+            setattr(self, action[0], a)
+            self.action_group.add_action_with_accel(a, action[5])
+            a.set_accel_group(self.parent.accel_group)
+            a.connect_accelerator()
+            a.connect('activate', action[6])
+
+    def init_menu(self):
+        m = self.mainmenu_review.get_submenu()
+        m.append(self.show_action.create_menu_item())
+        m.append(self.correct_action.create_menu_item())
+        m.append(self.incorrect_action.create_menu_item())
+        m.append(self.done_action.create_menu_item())
+
+    def init_toolbar(self):
+        t = self.review_toolbar
+        t.insert(self.show_action.create_tool_item(), -1)
+        t.insert(self.correct_action.create_tool_item(), -1)
+        t.insert(self.incorrect_action.create_tool_item(), -1)
+        t.insert(gtk.SeparatorToolItem(), -1)
+        t.insert(self.done_action.create_tool_item(), -1)
 
     def enter_mode(self):
         self.review_frame.show()
@@ -140,12 +184,9 @@ class ReviewMode:
         assert len(self.parent.card_list.get_model()) > 0
         self.back_text_view.get_buffer().set_text(self.curr_card[model.BACK_CIDX])
 
-        self.show_button.set_sensitive(False)
-        self.show_menu.set_sensitive(False)
-        self.correct_button.set_sensitive(True)
-        self.correct_menu.set_sensitive(True)
-        self.incorrect_button.set_sensitive(True)
-        self.incorrect_menu.set_sensitive(True)
+        self.show_action.set_sensitive(False)
+        self.correct_action.set_sensitive(True)
+        self.incorrect_action.set_sensitive(True)
 
     def _answered(self, correct):
         assert not self.session is None
@@ -167,12 +208,9 @@ class ReviewMode:
     def _show_stats(self):
         assert not self.session is None
         
-        self.show_button.set_sensitive(False)
-        self.show_menu.set_sensitive(False)
-        self.correct_button.set_sensitive(False)
-        self.correct_menu.set_sensitive(False)
-        self.incorrect_button.set_sensitive(False)
-        self.incorrect_menu.set_sensitive(False)
+        self.show_action.set_sensitive(False)
+        self.correct_action.set_sensitive(False)
+        self.incorrect_action.set_sensitive(False)
 
         self.back_text_view.get_buffer().set_text('')
 
@@ -200,12 +238,9 @@ Study time: %s
         self.front_text_view.get_buffer().set_text(self.curr_card[model.FRONT_CIDX])
         self.back_text_view.get_buffer().set_text('')
 
-        self.show_button.set_sensitive(True)
-        self.show_menu.set_sensitive(True)
-        self.correct_button.set_sensitive(False)
-        self.correct_menu.set_sensitive(False)
-        self.incorrect_button.set_sensitive(False)
-        self.incorrect_menu.set_sensitive(False)
+        self.show_action.set_sensitive(True)
+        self.correct_action.set_sensitive(False)
+        self.incorrect_action.set_sensitive(False)
 
     def _get_next_card(self):
         cards = self.parent.card_list.get_model()
