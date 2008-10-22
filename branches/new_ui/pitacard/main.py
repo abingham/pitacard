@@ -34,8 +34,9 @@ def parse_args():
                       default=os.path.expanduser(os.path.join('~', '.pitacardrc')))
     return parser.parse_args()
 
-def init_config(config_files):
-    pitacard.conf.read(config_files)
+def init_config(config_file):
+    pitacard.conf.filename = config_file
+    pitacard.conf.reload()
 
 def main(dev=False):
     pitacard.log.init_logging()
@@ -44,7 +45,8 @@ def main(dev=False):
 
     if not os.path.lexists(options.configfile):
         logger.error('Unable to open config file: %s' % options.configfile)
-    init_config([options.configfile])
+    logger.info('opening config file: %s' % options.configfile)
+    init_config(options.configfile)
 
     m = pitacard.ui.UI(os.path.join(os.path.dirname(__file__),
                                     'glade',
@@ -53,10 +55,10 @@ def main(dev=False):
     filename = ''
     if options.filename:
         filename = options.filename
-    elif pitacard.conf.get('startup', 'usefile').lower() == 'custom':
-        filename = pitacard.conf.get('startup', 'customfile')
-    elif pitacard.conf.get('startup', 'usefile').lower() == 'last':
-        filename = pitacard.conf.get('startup', 'lastfile')
+    elif pitacard.conf['startup']['usefile'].lower() == 'custom':
+        filename = pitacard.conf['startup']['customfile']
+    elif pitacard.conf['startup']['usefile'].lower() == 'last':
+        filename = pitacard.conf['startup']['lastfile']
 
     filename = os.path.expanduser(filename)
 
@@ -70,12 +72,11 @@ def main(dev=False):
     gtk.main()
 
     # write config
-    cfgfile = open(options.configfile, 'w')
-    if not cfgfile:
-        logger.error('Unable to open config file for writing: %s' % options.configfile)
-    else:
-        logger.info('Reading config file: %s' % cfgfile)
-        pitacard.conf.write(cfgfile)
+    try:
+        logger.info('writing config file: %s' % pitacard.conf.filename)
+        pitacard.conf.write()
+    except:
+        logger.error('some error writing config file...yell at a developer!')
 
 if __name__ == '__main__':
     main()

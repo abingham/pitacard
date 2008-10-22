@@ -1,3 +1,3 @@
-import pitacard.config
+import pitacard.configobj
 
-conf = pitacard.config.Config(pitacard.config.options)
+conf = pitacard.configobj.ConfigObj()

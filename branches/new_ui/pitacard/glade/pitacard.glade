@@ -38,6 +38,20 @@
                       </widget>
                     </child>
                     <child>
+                      <widget class="GtkMenuItem" id="open_recent_menu">
+                        <property name="visible">True</property>
+                        <property name="label" translatable="yes">Open Recent</property>
+                        <property name="use_underline">True</property>
+                      </widget>
+                    </child>
+                    <child>
+                      <widget class="GtkSeparatorMenuItem" id="">
+                        <property name="visible">True</property>
+                        <property name="label" translatable="yes">menuitem1</property>
+                        <property name="use_underline">True</property>
+                      </widget>
+                    </child>
+                    <child>
                       <widget class="GtkImageMenuItem" id="save">
                         <property name="visible">True</property>
                         <property name="label">gtk-save</property>
@@ -396,17 +410,25 @@
             <property name="n_columns">2</property>
             <property name="column_spacing">4</property>
             <child>
-              <widget class="GtkComboBox" id="type_combo">
+              <widget class="GtkLabel" id="ceb - ChooseBin - Text">
                 <property name="visible">True</property>
-                <property name="items" translatable="yes">Irreversible
-Reversible
-Note</property>
+                <property name="label" translatable="yes">Bin</property>
               </widget>
               <packing>
-                <property name="left_attach">1</property>
-                <property name="right_attach">2</property>
+                <property name="x_options"></property>
+                <property name="y_options"></property>
+              </packing>
+            </child>
+            <child>
+              <widget class="GtkLabel" id="ceb - ChooseType - Text">
+                <property name="visible">True</property>
+                <property name="label" translatable="yes">Type</property>
+              </widget>
+              <packing>
                 <property name="top_attach">1</property>
                 <property name="bottom_attach">2</property>
+                <property name="x_options"></property>
+                <property name="y_options"></property>
               </packing>
             </child>
             <child>
@@ -429,25 +451,17 @@ Note</property>
               </packing>
             </child>
             <child>
-              <widget class="GtkLabel" id="ceb - ChooseType - Text">
+              <widget class="GtkComboBox" id="type_combo">
                 <property name="visible">True</property>
-                <property name="label" translatable="yes">Type</property>
+                <property name="items" translatable="yes">Irreversible
+Reversible
+Note</property>
               </widget>
               <packing>
+                <property name="left_attach">1</property>
+                <property name="right_attach">2</property>
                 <property name="top_attach">1</property>
                 <property name="bottom_attach">2</property>
-                <property name="x_options"></property>
-                <property name="y_options"></property>
-              </packing>
-            </child>
-            <child>
-              <widget class="GtkLabel" id="ceb - ChooseBin - Text">
-                <property name="visible">True</property>
-                <property name="label" translatable="yes">Bin</property>
-              </widget>
-              <packing>
-                <property name="x_options"></property>
-                <property name="y_options"></property>
               </packing>
             </child>
           </widget>

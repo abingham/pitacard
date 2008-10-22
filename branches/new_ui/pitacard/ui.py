@@ -19,10 +19,12 @@
 #     austin.bingham@gmail.com
 #     teal@mailshack.com
 
-import os.path
+import logging, os.path
 import gtk, gtk.glade
 import stackio, csvio
 import pitacard, pitacard.edit_mode, pitacard.review_mode, pitacard.profile, pitacard.save_file_mgr, pitacard.util
+
+logger = logging.getLogger('pitacard.ui')
 
 def get_text(buffer):
     return buffer.get_text(buffer.get_start_iter(),
@@ -35,6 +37,7 @@ class UI:
 
     def __init__(self, gladefile):
         self.profile = pitacard.profile.Profile()
+        self.recent_manager = gtk.recent_manager_get_default()
 
         self.gladefile = gladefile
         self.xml = gtk.glade.XML(self.gladefile, 'main_window')
@@ -50,8 +53,10 @@ class UI:
                                     'edit_frame',
                                     'edit_toolbar',
                                     'mainmenu_cards',
+                                    'mainmenu_file',
                                     'mainmenu_review',
                                     'main_window',
+                                    'open_recent_menu',
                                     'review_frame',
                                     'review_menu',
                                     'review_toolbar',
@@ -71,9 +76,9 @@ class UI:
                                                                 self.save_handler)
         self.save_file_mgr.change_signal.connect(self.sync_ui)
         
-        if pitacard.conf.get('startup', 'preservegeom') == 'true':
-            self.main_window.resize(int(pitacard.conf.get('startup', 'lastwidth')), int(pitacard.conf.get('startup', 'lastheight')))
-            self.main_window.move(int(pitacard.conf.get('startup', 'lastposx')), int(pitacard.conf.get('startup', 'lastposy')))
+        if pitacard.conf['startup']['preservegeom'] == 'true':
+            self.main_window.resize(int(pitacard.conf['startup']['lastwidth']), int(pitacard.conf['startup']['lastheight']))
+            self.main_window.move(int(pitacard.conf['startup']['lastposx']), int(pitacard.conf['startup']['lastposy']))
         else:
             self.main_window.resize(500, 500)
             self.main_window.move(380, 150)
@@ -94,6 +99,15 @@ class UI:
                 'on_quit_menu_activate' :
                     lambda x: self.quit(),
                 })
+
+        recent_chooser_menu = gtk.RecentChooserMenu(self.recent_manager)
+        self.open_recent_menu.set_submenu(recent_chooser_menu)
+        recent_chooser_menu.connect('item-activated', lambda c: self.open(c.get_current_uri()))
+        
+        # TODO: Add *.stack filter. How does this work?
+        # filter = gtk.RecentFilter()
+        # filter.add_pattern('*')
+        # recent_chooser_menu.add_filter(filter)
 
         self.editor = pitacard.edit_mode.EditMode(self)
         self.reviewer = pitacard.review_mode.ReviewMode(self) 
@@ -125,12 +139,15 @@ class UI:
         self.save_file_mgr.open(filename)
 
     def open_handler(self, filename):
+        logger.error('open_handler: %s' % filename)
+
         self.enter_edit_mode()
         
         self.profile, model = stackio.load(filename)
         self.card_list.get_model().clear()
         for row in model:
             self.card_list.get_model().append(row)
+        self.recent_manager.add_item(filename)
         return pitacard.save_file_mgr.SaveFileMgr.OK
         
     def sync_ui(self):
