@@ -195,20 +195,40 @@ class SaveFileMgr:
         return rslt
 
     def _query_unsaved_changes(self):
-        # returns: cancel, error, ok
+        '''
+        Checks to see if there are unsaved changes and, if so, gives the user
+        the opportunity to save them. This is intended to be called in response
+        to operations that replace the existing data with new data (i.e. open,
+        new, etc.).
+
+        If this returns CANCEL, then the user has elected to cancel the operation
+        that would replace the current data. If it returns OK, then either the
+        user saved the changes or elected to not save them...in either case, the
+        pending operation should proceed.
+
+        A return value of ERROR indicates that an error occurred in saving the
+        changes. You should probably not continue with the pending operation, but
+        that's up to you.
+        '''
         if not self.unsaved_changes:
             return SaveFileMgr.OK
 
         dlg = gtk.MessageDialog(None,
                                 False,
                                 gtk.MESSAGE_QUESTION,
-                                gtk.BUTTONS_YES_NO,
+                                gtk.BUTTONS_NONE, # gtk.BUTTONS_YES_NO | gtk.BUTTONS_CANCEL,
                                 'Save unsaved changes?')
+        dlg.add_buttons(gtk.STOCK_YES,    gtk.RESPONSE_YES, 
+                        gtk.STOCK_NO,     gtk.RESPONSE_NO,
+                        gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL)
+
         dlg.set_transient_for(self.parent_window)
         rslt = dlg.run()
         dlg.destroy()
         if gtk.RESPONSE_NO == rslt:
             return SaveFileMgr.OK
+        elif gtk.RESPONSE_CANCEL == rslt:
+            return SaveFileMgr.CANCEL
         
         return self.save()
 

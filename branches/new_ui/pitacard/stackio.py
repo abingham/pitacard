@@ -68,7 +68,11 @@ def save(filename, cards, profile):
 
     for c in cards:
         thecursor.execute('insert into cards values(?,?,?,?)',
-                       tuple([c[x] for x in range(0,len(card_fields))]))
+                          (unicode(c[0]),
+                           unicode(c[1]),
+                           c[2], 
+                           unicode(c[3])))
+        # tuple([c[x] for x in range(0,len(card_fields))]))
 
     conn.commit()
 
