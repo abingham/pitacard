@@ -21,7 +21,7 @@
 
 import gtk
 import datetime, random
-import leitner, model, util
+import pitacard.leitner, pitacard.model, pitacard.util
 
 class Settings:
     '''
@@ -88,14 +88,14 @@ class ReviewMode:
         self.settings = Settings()
         self.session = Session(self.settings)
 
-        util.link_widgets(self.parent.xml,
-                          self,
-                          ['front_text_view',
-                           'back_text_view',
-                           'review_frame',
-                           'review_toolbar',
-                           'mainmenu_review',
-                           ])
+        pitacard.util.link_widgets(self.parent.xml,
+                                   self,
+                                   ['front_text_view',
+                                    'back_text_view',
+                                    'review_frame',
+                                    'review_toolbar',
+                                    'mainmenu_review',
+                                    ])
 
         self.init_actions()
         self.init_menu()
@@ -182,7 +182,7 @@ class ReviewMode:
 
     def _show_answer(self):
         assert len(self.parent.card_list.get_model()) > 0
-        self.back_text_view.get_buffer().set_text(self.curr_card[model.BACK_CIDX])
+        self.back_text_view.get_buffer().set_text(self.curr_card[pitacard.model.BACK_CIDX])
 
         self.show_action.set_sensitive(False)
         self.correct_action.set_sensitive(True)
@@ -195,10 +195,10 @@ class ReviewMode:
         self.session.answered(correct)
 
         if correct:
-            self.curr_card[model.BIN_CIDX] = min(ReviewMode.cNumBins - 1,
-                                                 self.curr_card[model.BIN_CIDX] + 1)
+            self.curr_card[pitacard.model.BIN_CIDX] = min(ReviewMode.cNumBins - 1,
+                                                 self.curr_card[pitacard.model.BIN_CIDX] + 1)
         else:
-            self.curr_card[model.BIN_CIDX] = 0
+            self.curr_card[pitacard.model.BIN_CIDX] = 0
 
         if self.session.finished:
             self._show_stats()
@@ -235,7 +235,7 @@ Study time: %s
             return
 
         self.curr_card = self._get_next_card()
-        self.front_text_view.get_buffer().set_text(self.curr_card[model.FRONT_CIDX])
+        self.front_text_view.get_buffer().set_text(self.curr_card[pitacard.model.FRONT_CIDX])
         self.back_text_view.get_buffer().set_text('')
 
         self.show_action.set_sensitive(True)
@@ -245,5 +245,5 @@ Study time: %s
     def _get_next_card(self):
         cards = self.parent.card_list.get_model()
         assert len(cards) > 0
-        return cards[leitner.next_card_index(cards, ReviewMode.cNumBins)]
+        return cards[pitacard.leitner.next_card_index(cards, ReviewMode.cNumBins)]
         

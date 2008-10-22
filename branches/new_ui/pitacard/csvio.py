@@ -21,7 +21,7 @@
 
 import csv, logging
 import gtk
-import model
+import pitacard.model
 
 logger = logging.getLogger('pitacard.csvio')
 
@@ -42,7 +42,7 @@ def compatibilitysave(filename, cards):
     writer = csv.writer(open(filename, "wb"), delimiter='\t')
 
     for c in cards:
-        cardrow = [ c[model.FRONT_CIDX], c[model.BACK_CIDX] ]
+        cardrow = [ c[pitacard.model.FRONT_CIDX], c[pitacard.model.BACK_CIDX] ]
         writer.writerow(cardrow)
 
 def load(filename):
@@ -50,8 +50,8 @@ def load(filename):
     optvals = []
     for givendelimiter in [',', '\t']:
         reader = csv.reader(open(filename, "rb"), delimiter=givendelimiter)
-        rval = model.new_model()
-        optval = model.new_profile_model()
+        rval = pitacard.model.new_model()
+        optval = pitacard.model.new_profile_model()
         for row in reader:
             if row[0] == "profile" and len(row) >=9 :
                 try:

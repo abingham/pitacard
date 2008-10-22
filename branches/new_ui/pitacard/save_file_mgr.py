@@ -21,7 +21,7 @@
 
 import os
 import gtk
-import error, signal
+import pitacard.error, pitacard.signal
 
 class SaveFileMgr:
     OK          = 0
@@ -43,7 +43,7 @@ class SaveFileMgr:
         self.open_handler = open_handler
         self.save_handler = save_handler
         self.format = format
-        self.change_signal = signal.Signal()
+        self.change_signal = pitacard.signal.Signal()
 
     def flag_change(self):
         self.unsaved_changes = True
@@ -73,16 +73,16 @@ class SaveFileMgr:
 
     def _save(self, filename):
         if not self.save_handler:
-            error.error('no save handler set...yell at the developers!', self.parent_window)
+            pitacard.error.error('no save handler set...yell at the developers!', self.parent_window)
             return SaveFileMgr.ERROR
 
         dir = os.path.dirname(filename)
         if os.path.lexists(filename):
             if not os.access(filename, os.W_OK):
-                error.error('%s is not writable' % filename, self.parent_window)
+                pitacard.error.error('%s is not writable' % filename, self.parent_window)
                 return SaveFileMgr.WRITE_ERROR
         elif os.path.lexists(dir) and not os.access(dir, os.W_OK):
-            error.error('%s is not writable' % filename, self.parent_window)
+            pitacard.error.error('%s is not writable' % filename, self.parent_window)
             return SaveFileMgr.WRITE_ERROR
 
         rslt = self.save_handler(filename)
@@ -153,7 +153,7 @@ class SaveFileMgr:
         returns: cancel, error, ok
         '''
         if not self.open_handler:
-            error.error('no file-open-handler', self.parent_window)
+            pitacard.error.error('no file-open-handler', self.parent_window)
             return SaveFileMgr.ERROR
 
         rslt = self._query_unsaved_changes()
@@ -161,7 +161,7 @@ class SaveFileMgr:
             return rslt
         
         if filename and not os.path.lexists(filename):
-            error.error('%s does not exist' % filename, self.parent_window)
+            pitacard.error.error('%s does not exist' % filename, self.parent_window)
             return SaveFileMgr.ERROR
         elif not filename:
             dlg = gtk.FileChooserDialog('Open',
@@ -185,7 +185,7 @@ class SaveFileMgr:
                 return SaveFileMgr.CANCEL
 
         if not os.access(filename, os.R_OK):
-            error.error('%s is not readable' % filename, self.parent_window)
+            pitacard.error.error('%s is not readable' % filename, self.parent_window)
             return SaveFilemgr.ERROR
 
         rslt = self.open_handler(filename)

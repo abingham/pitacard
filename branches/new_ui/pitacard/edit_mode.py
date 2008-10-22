@@ -1,17 +1,17 @@
 import gtk
-import model, util
+import pitacard.model, pitacard.util
 
 class EditMode:
     def __init__(self, parent):
         self.parent = parent
         
-        util.link_widgets(self.parent.xml,
-                          self,
-                          ['card_list',
-                           'edit_frame',
-                           'edit_toolbar',
-                           'mainmenu_cards',
-                           ])
+        pitacard.util.link_widgets(self.parent.xml,
+                                   self,
+                                   ['card_list',
+                                    'edit_frame',
+                                    'edit_toolbar',
+                                    'mainmenu_cards',
+                                    ])
 
         self.parent.xml.signal_autoconnect({
                 'on_card_list_row_activated' :
@@ -100,34 +100,34 @@ class EditMode:
         cell = gtk.CellRendererText()
         cell.set_fixed_height_from_font(1)
         col.pack_start(cell, True)
-        col.add_attribute(cell, 'text', model.FRONT_CIDX)
-        col.set_sort_column_id(model.FRONT_CIDX)
+        col.add_attribute(cell, 'text', pitacard.model.FRONT_CIDX)
+        col.set_sort_column_id(pitacard.model.FRONT_CIDX)
         self.card_list.append_column(col)
 
         col = gtk.TreeViewColumn('Back')
         cell = gtk.CellRendererText()
         cell.set_fixed_height_from_font(1)
         col.pack_start(cell, True)
-        col.add_attribute(cell, 'text', model.BACK_CIDX)
-        col.set_sort_column_id(model.BACK_CIDX)
+        col.add_attribute(cell, 'text', pitacard.model.BACK_CIDX)
+        col.set_sort_column_id(pitacard.model.BACK_CIDX)
         self.card_list.append_column(col)
 
         col = gtk.TreeViewColumn('Bin')
         cell = gtk.CellRendererText()
         col.pack_start(cell, True)
-        col.add_attribute(cell, 'text', model.BIN_CIDX)
-        col.set_sort_column_id(model.BIN_CIDX)
+        col.add_attribute(cell, 'text', pitacard.model.BIN_CIDX)
+        col.set_sort_column_id(pitacard.model.BIN_CIDX)
         self.card_list.append_column(col)
 
         col = gtk.TreeViewColumn('Type')
         cell = gtk.CellRendererText()
         #cell.set_property('fontstyle', 'italic')
         col.pack_start(cell, True)
-        col.add_attribute(cell, 'text', model.TYPE_CIDX)
-        col.set_sort_column_id(model.TYPE_CIDX)
+        col.add_attribute(cell, 'text', pitacard.model.TYPE_CIDX)
+        col.set_sort_column_id(pitacard.model.TYPE_CIDX)
         self.card_list.append_column(col)        
 
-        self.card_list.set_model(model.new_model())
+        self.card_list.set_model(pitacard.model.new_model())
         self.connect_model()
 
     def connect_model(self):
@@ -156,9 +156,9 @@ class EditMode:
         response = dlg.run()
 
         bin = bin_combo.get_active()
-        cardtype = model.cardtypes[type_combo.get_active()]
-        front = util.get_text(front_text)
-        back = util.get_text(back_text)
+        cardtype = pitacard.model.cardtypes[type_combo.get_active()]
+        front = pitacard.util.get_text(front_text)
+        back = pitacard.util.get_text(back_text)
         dlg.destroy()
 
         if not response == gtk.RESPONSE_OK: return
@@ -177,10 +177,10 @@ class EditMode:
         if not iter: return
 
         bin,cardtype,front,back = mdl.get(iter,
-                                          model.BIN_CIDX,
-                                          model.TYPE_CIDX,
-                                          model.FRONT_CIDX,
-                                          model.BACK_CIDX)
+                                          pitacard.model.BIN_CIDX,
+                                          pitacard.model.TYPE_CIDX,
+                                          pitacard.model.FRONT_CIDX,
+                                          pitacard.model.BACK_CIDX)
 
         xml = gtk.glade.XML(self.parent.gladefile, 'CardEditorDlg')
         dlg = xml.get_widget('CardEditorDlg')
@@ -190,7 +190,7 @@ class EditMode:
         bincombo.set_active(bin)
 
         cardtypecombo = xml.get_widget('type_combo')
-	cardtypecombo.set_active(model.cardtypes.index(cardtype))
+	cardtypecombo.set_active(pitacard.model.cardtypes.index(cardtype))
 
         front_text = xml.get_widget('front_text_view')
         front_text.get_buffer().set_text(front)
@@ -200,19 +200,19 @@ class EditMode:
 
         response = dlg.run()
         bin = bincombo.get_active()
-        cardtype = model.cardtypes[cardtypecombo.get_active()]
-        front = util.get_text(front_text)
-        back = util.get_text(back_text)
+        cardtype = pitacard.model.cardtypes[cardtypecombo.get_active()]
+        front = pitacard.util.get_text(front_text)
+        back = pitacard.util.get_text(back_text)
         dlg.destroy()
 
         if not response == gtk.RESPONSE_OK: return
         if front == "" and back == "": return
 
         mdl.set(iter,
-                model.BIN_CIDX, bin,
-                model.FRONT_CIDX, front,
-                model.BACK_CIDX, back,
-                model.TYPE_CIDX, cardtype)
+                pitacard.model.BIN_CIDX, bin,
+                pitacard.model.FRONT_CIDX, front,
+                pitacard.model.BACK_CIDX, back,
+                pitacard.model.TYPE_CIDX, cardtype)
 
     def delete_selected_card(self):
         sel = self.card_list.get_selection()

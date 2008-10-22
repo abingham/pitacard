@@ -21,7 +21,7 @@
 
 import gtk
 import logging, optparse, os, string
-import config, log, ui
+import pitacard, pitacard.log, pitacard.ui
 
 logger = logging.getLogger('pitacard.main')
 
@@ -35,31 +35,28 @@ def parse_args():
     return parser.parse_args()
 
 def init_config(config_files):
-    cfg = config.Config(config.options)
-    cfg.read(config_files)
-    return cfg
+    pitacard.conf.read(config_files)
 
 def main(dev=False):
-    log.init_logging()
+    pitacard.log.init_logging()
 
     (options, args) = parse_args()
 
     if not os.path.lexists(options.configfile):
         logger.error('Unable to open config file: %s' % options.configfile)
-    cfg = init_config([options.configfile])
+    init_config([options.configfile])
 
-    m = ui.UI(os.path.join(os.path.dirname(__file__),
-                           'glade',
-                           'pitacard.glade'),
-              cfg)
+    m = pitacard.ui.UI(os.path.join(os.path.dirname(__file__),
+                                    'glade',
+                                    'pitacard.glade'))
 
     filename = ''
     if options.filename:
         filename = options.filename
-    elif cfg.get('startup', 'usefile').lower() == 'custom':
-        filename = cfg.get('startup', 'customfile')
-    elif cfg.get('startup', 'usefile').lower() == 'last':
-        filename = cfg.get('startup', 'lastfile')
+    elif pitacard.conf.get('startup', 'usefile').lower() == 'custom':
+        filename = pitacard.conf.get('startup', 'customfile')
+    elif pitacard.conf.get('startup', 'usefile').lower() == 'last':
+        filename = pitacard.conf.get('startup', 'lastfile')
 
     filename = os.path.expanduser(filename)
 
@@ -78,7 +75,7 @@ def main(dev=False):
         logger.error('Unable to open config file for writing: %s' % options.configfile)
     else:
         logger.info('Reading config file: %s' % cfgfile)
-        cfg.write(cfgfile)
+        pitacard.conf.write(cfgfile)
 
 if __name__ == '__main__':
     main()

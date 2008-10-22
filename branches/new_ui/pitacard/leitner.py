@@ -19,7 +19,7 @@
 #     austin.bingham@gmail.com
 
 import random
-import model
+import pitacard.model
 
 def _bin_value(bin, num_bins):
     assert bin in range(num_bins), 'bin %d not in range (0,%d)' % (bin, num_bins)
@@ -33,18 +33,18 @@ def next_card_index(cards, num_bins):
     # count total bin number of all cards
     sum = 0
     for card in cards:
-        sum += _bin_value(card[model.BIN_CIDX], num_bins)
+        sum += _bin_value(card[pitacard.model.BIN_CIDX], num_bins)
             
     # rand in that total bin number
     count = random.randint(0, sum - 1)
         
     # index into cards
     idx = 0
-    bin_value = _bin_value(cards[idx][model.BIN_CIDX], num_bins)
+    bin_value = _bin_value(cards[idx][pitacard.model.BIN_CIDX], num_bins)
     while count - bin_value > 0:
         count -= bin_value
         idx += 1
-        bin_value = _bin_value(cards[idx][model.BIN_CIDX], num_bins)
+        bin_value = _bin_value(cards[idx][pitacard.model.BIN_CIDX], num_bins)
 
     assert idx < len(cards)
     return idx

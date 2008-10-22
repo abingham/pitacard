@@ -22,8 +22,7 @@
 import os.path
 import gtk, gtk.glade
 import stackio, csvio
-import edit_mode, review_mode, options, profile, save_file_mgr, util
-from model import *
+import pitacard, pitacard.edit_mode, pitacard.review_mode, pitacard.profile, pitacard.save_file_mgr, pitacard.util
 
 def get_text(buffer):
     return buffer.get_text(buffer.get_start_iter(),
@@ -34,48 +33,47 @@ class UI:
             self.quit()
             return True
 
-    def __init__(self, gladefile, cfg):
-        self.config = cfg
-        self.profile = profile.Profile()
+    def __init__(self, gladefile):
+        self.profile = pitacard.profile.Profile()
 
         self.gladefile = gladefile
         self.xml = gtk.glade.XML(self.gladefile, 'main_window')
 
-        util.link_widgets(self.xml,
-                          self,
-                          ['card_list',
-                           'delete_card_button',
-                           'delete_card_menu',
-                           'do_review_button',
-                           'edit_card_button',
-                           'edit_card_menu',
-                           'edit_frame',
-                           'edit_toolbar',
-                           'mainmenu_cards',
-                           'mainmenu_review',
-                           'main_window',
-                           'review_frame',
-                           'review_menu',
-                           'review_toolbar',
-                           'statusbar_left',
-                           'statusbar_right',
-                           ])
+        pitacard.util.link_widgets(self.xml,
+                                   self,
+                                   ['card_list',
+                                    'delete_card_button',
+                                    'delete_card_menu',
+                                    'do_review_button',
+                                    'edit_card_button',
+                                    'edit_card_menu',
+                                    'edit_frame',
+                                    'edit_toolbar',
+                                    'mainmenu_cards',
+                                    'mainmenu_review',
+                                    'main_window',
+                                    'review_frame',
+                                    'review_menu',
+                                    'review_toolbar',
+                                    'statusbar_left',
+                                    'statusbar_right',
+                                    ])
 
         self.accel_group = gtk.AccelGroup()
         self.main_window.add_accel_group(self.accel_group)
 
         self.main_window.connect("delete_event", self.delete_event)
 
-        self.save_file_mgr = save_file_mgr.SaveFileMgr(self.main_window,
-                                                       ('pitacard stack', '.stack'),
-                                                       self.new_handler,
-                                                       self.open_handler,
-                                                       self.save_handler)
+        self.save_file_mgr = pitacard.save_file_mgr.SaveFileMgr(self.main_window,
+                                                                ('pitacard stack', '.stack'),
+                                                                self.new_handler,
+                                                                self.open_handler,
+                                                                self.save_handler)
         self.save_file_mgr.change_signal.connect(self.sync_ui)
         
-        if self.config.get('startup', 'preservegeom') == 'true':
-            self.main_window.resize(int(self.config.get('startup', 'lastwidth')), int(self.config.get('startup', 'lastheight')))
-            self.main_window.move(int(self.config.get('startup', 'lastposx')), int(self.config.get('startup', 'lastposy')))
+        if pitacard.conf.get('startup', 'preservegeom') == 'true':
+            self.main_window.resize(int(pitacard.conf.get('startup', 'lastwidth')), int(pitacard.conf.get('startup', 'lastheight')))
+            self.main_window.move(int(pitacard.conf.get('startup', 'lastposx')), int(pitacard.conf.get('startup', 'lastposy')))
         else:
             self.main_window.resize(500, 500)
             self.main_window.move(380, 150)
@@ -97,8 +95,8 @@ class UI:
                     lambda x: self.quit(),
                 })
 
-        self.editor = edit_mode.EditMode(self)
-        self.reviewer = review_mode.ReviewMode(self) 
+        self.editor = pitacard.edit_mode.EditMode(self)
+        self.reviewer = pitacard.review_mode.ReviewMode(self) 
 
         self.enter_edit_mode()
         self.sync_ui()
@@ -107,9 +105,9 @@ class UI:
         self.save_file_mgr.new()
 
     def new_handler(self):
-        self.profile = profile.Profile()
+        self.profile = pitacard.profile.Profile()
         self.card_list.get_model().clear()
-        return save_file_mgr.SaveFileMgr.OK
+        return pitacard.save_file_mgr.SaveFileMgr.OK
 
     def save(self):
         self.save_file_mgr.save()
@@ -121,7 +119,7 @@ class UI:
         stackio.save(filename, 
                      self.card_list.get_model(), 
                      self.profile)
-        return save_file_mgr.SaveFileMgr.OK
+        return pitacard.save_file_mgr.SaveFileMgr.OK
 
     def open(self, filename=None):
         self.save_file_mgr.open(filename)
@@ -133,7 +131,7 @@ class UI:
         self.card_list.get_model().clear()
         for row in model:
             self.card_list.get_model().append(row)
-        return save_file_mgr.SaveFileMgr.OK
+        return pitacard.save_file_mgr.SaveFileMgr.OK
         
     def sync_ui(self):
         cardlen = len(self.card_list.get_model())
@@ -191,5 +189,5 @@ class UI:
 
     def quit(self):
         rslt = self.save_file_mgr.quit()
-        if not save_file_mgr.SaveFileMgr.CANCEL == rslt:
+        if not pitacard.save_file_mgr.SaveFileMgr.CANCEL == rslt:
             gtk.main_quit()
