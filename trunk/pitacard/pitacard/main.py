@@ -1,5 +1,5 @@
 # pitacard: A Leitner-method flashcard program
-# Copyright (C) 2006 Austin Bingham, Nate Ross
+# Copyright (C) 2006-2008 Austin Bingham, Nate Ross
 #
 # This program is free software you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -21,7 +21,7 @@
 
 import gtk
 import logging, optparse, os, string
-import config, log, ui
+import pitacard, pitacard.log, pitacard.ui
 
 logger = logging.getLogger('pitacard.main')
 
@@ -34,32 +34,31 @@ def parse_args():
                       default=os.path.expanduser(os.path.join('~', '.pitacardrc')))
     return parser.parse_args()
 
-def init_config(config_files):
-    cfg = config.Config(config.options)
-    cfg.read(config_files)
-    return cfg
+def init_config(config_file):
+    pitacard.conf.filename = config_file
+    pitacard.conf.reload()
 
 def main(dev=False):
-    log.init_logging()
+    pitacard.log.init_logging()
 
     (options, args) = parse_args()
 
     if not os.path.lexists(options.configfile):
         logger.error('Unable to open config file: %s' % options.configfile)
-    cfg = init_config([options.configfile])
+    logger.info('opening config file: %s' % options.configfile)
+    init_config(options.configfile)
 
-    m = ui.UI(os.path.join(os.path.dirname(__file__),
-                           'glade',
-                           'pitacard.glade'),
-              cfg)
+    m = pitacard.ui.UI(os.path.join(os.path.dirname(__file__),
+                                    'glade',
+                                    'pitacard.glade'))
 
     filename = ''
     if options.filename:
         filename = options.filename
-    elif cfg.get('startup', 'usefile').lower() == 'custom':
-        filename = cfg.get('startup', 'customfile')
-    elif cfg.get('startup', 'usefile').lower() == 'last':
-        filename = cfg.get('startup', 'lastfile')
+    elif pitacard.conf['startup']['usefile'].lower() == 'custom':
+        filename = pitacard.conf['startup']['customfile']
+    elif pitacard.conf['startup']['usefile'].lower() == 'last':
+        filename = pitacard.conf['startup']['lastfile']
 
     filename = os.path.expanduser(filename)
 
@@ -73,12 +72,11 @@ def main(dev=False):
     gtk.main()
 
     # write config
-    cfgfile = open(options.configfile, 'w')
-    if not cfgfile:
-        logger.error('Unable to open config file for writing: %s' % options.configfile)
-    else:
-        logger.info('Reading config file: %s' % cfgfile)
-        cfg.write(cfgfile)
+    try:
+        logger.info('writing config file: %s' % pitacard.conf.filename)
+        pitacard.conf.write()
+    except:
+        logger.error('some error writing config file...yell at a developer!')
 
 if __name__ == '__main__':
     main()

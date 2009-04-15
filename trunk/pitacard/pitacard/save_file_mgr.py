@@ -1,6 +1,27 @@
+# pitacard: A Leitner-method flashcard program
+# Copyright (C) 2006-2008 Austin Bingham, Nate Ross
+#
+# This program is free software you can redistribute it and/or
+# modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation either version 2
+# of the License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program; see the file LICENSE. If not, write to the Free Software
+# Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+#
+# You can reach the authors at:
+#     austin.bingham@gmail.com
+#     teal@mailshack.com
+
 import os
 import gtk
-import error, signal
+import pitacard.error, pitacard.signal
 
 class SaveFileMgr:
     OK          = 0
@@ -22,7 +43,7 @@ class SaveFileMgr:
         self.open_handler = open_handler
         self.save_handler = save_handler
         self.format = format
-        self.change_signal = signal.Signal()
+        self.change_signal = pitacard.signal.Signal()
 
     def flag_change(self):
         self.unsaved_changes = True
@@ -52,16 +73,16 @@ class SaveFileMgr:
 
     def _save(self, filename):
         if not self.save_handler:
-            error.error('no save handler set...yell at the developers!', self.parent_window)
+            pitacard.error.error('no save handler set...yell at the developers!', self.parent_window)
             return SaveFileMgr.ERROR
 
         dir = os.path.dirname(filename)
         if os.path.lexists(filename):
             if not os.access(filename, os.W_OK):
-                error.error('%s is not writable' % filename, self.parent_window)
+                pitacard.error.error('%s is not writable' % filename, self.parent_window)
                 return SaveFileMgr.WRITE_ERROR
         elif os.path.lexists(dir) and not os.access(dir, os.W_OK):
-            error.error('%s is not writable' % filename, self.parent_window)
+            pitacard.error.error('%s is not writable' % filename, self.parent_window)
             return SaveFileMgr.WRITE_ERROR
 
         rslt = self.save_handler(filename)
@@ -132,7 +153,7 @@ class SaveFileMgr:
         returns: cancel, error, ok
         '''
         if not self.open_handler:
-            error.error('no file-open-handler', self.parent_window)
+            pitacard.error.error('no file-open-handler', self.parent_window)
             return SaveFileMgr.ERROR
 
         rslt = self._query_unsaved_changes()
@@ -140,7 +161,7 @@ class SaveFileMgr:
             return rslt
         
         if filename and not os.path.lexists(filename):
-            error.error('%s does not exist' % filename, self.parent_window)
+            pitacard.error.error('%s does not exist' % filename, self.parent_window)
             return SaveFileMgr.ERROR
         elif not filename:
             dlg = gtk.FileChooserDialog('Open',
@@ -164,7 +185,7 @@ class SaveFileMgr:
                 return SaveFileMgr.CANCEL
 
         if not os.access(filename, os.R_OK):
-            error.error('%s is not readable' % filename, self.parent_window)
+            pitacard.error.error('%s is not readable' % filename, self.parent_window)
             return SaveFilemgr.ERROR
 
         rslt = self.open_handler(filename)
@@ -174,20 +195,40 @@ class SaveFileMgr:
         return rslt
 
     def _query_unsaved_changes(self):
-        # returns: cancel, error, ok
+        '''
+        Checks to see if there are unsaved changes and, if so, gives the user
+        the opportunity to save them. This is intended to be called in response
+        to operations that replace the existing data with new data (i.e. open,
+        new, etc.).
+
+        If this returns CANCEL, then the user has elected to cancel the operation
+        that would replace the current data. If it returns OK, then either the
+        user saved the changes or elected to not save them...in either case, the
+        pending operation should proceed.
+
+        A return value of ERROR indicates that an error occurred in saving the
+        changes. You should probably not continue with the pending operation, but
+        that's up to you.
+        '''
         if not self.unsaved_changes:
             return SaveFileMgr.OK
 
         dlg = gtk.MessageDialog(None,
                                 False,
                                 gtk.MESSAGE_QUESTION,
-                                gtk.BUTTONS_YES_NO,
+                                gtk.BUTTONS_NONE, # gtk.BUTTONS_YES_NO | gtk.BUTTONS_CANCEL,
                                 'Save unsaved changes?')
+        dlg.add_buttons(gtk.STOCK_YES,    gtk.RESPONSE_YES, 
+                        gtk.STOCK_NO,     gtk.RESPONSE_NO,
+                        gtk.STOCK_CANCEL, gtk.RESPONSE_CANCEL)
+
         dlg.set_transient_for(self.parent_window)
         rslt = dlg.run()
         dlg.destroy()
         if gtk.RESPONSE_NO == rslt:
             return SaveFileMgr.OK
+        elif gtk.RESPONSE_CANCEL == rslt:
+            return SaveFileMgr.CANCEL
         
         return self.save()
 

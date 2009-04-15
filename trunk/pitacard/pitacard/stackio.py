@@ -1,5 +1,5 @@
 # pitacard: A Leitner-method flashcard program
-# Copyright (C) 2006 Austin Bingham, Nate Ross
+# Copyright (C) 2006-2008 Austin Bingham, Nate Ross
 #
 # This program is free software you can redistribute it and/or
 # modify it under the terms of the GNU General Public License
@@ -21,7 +21,7 @@
 
 from sqlite3 import dbapi2 as sqlite
 import logging
-import db, model, profile
+import pitacard.db, pitacard.model, pitacard.profile
 
 logger = logging.getLogger('pitacard.stackio')
 
@@ -48,12 +48,12 @@ card_fields = [
     ]
 
 def create_tables(cursor):
-    db.create_table(cursor, 'format', format_fields)
-    db.create_table(cursor, 'profile', profile_fields)
-    db.create_table(cursor, 'cards', card_fields)
+    pitacard.db.create_table(cursor, 'format', format_fields)
+    pitacard.db.create_table(cursor, 'profile', profile_fields)
+    pitacard.db.create_table(cursor, 'cards', card_fields)
 
 def save(filename, cards, profile):
-    conn = db.get_connection(filename)
+    conn = pitacard.db.get_connection(filename)
     thecursor = conn.cursor()
     create_tables(thecursor)
 
@@ -68,7 +68,11 @@ def save(filename, cards, profile):
 
     for c in cards:
         thecursor.execute('insert into cards values(?,?,?,?)',
-                       tuple([c[x] for x in range(0,len(card_fields))]))
+                          (unicode(c[0]),
+                           unicode(c[1]),
+                           c[2], 
+                           unicode(c[3])))
+        # tuple([c[x] for x in range(0,len(card_fields))]))
 
     conn.commit()
 
@@ -76,36 +80,36 @@ def load(filename):
     '''
     returns profile, model
     '''
-    conn = db.get_connection(filename)
+    conn = pitacard.db.get_connection(filename)
 
-    mdl = model.new_model()
-    pfl = profile.Profile()
+    mdl = pitacard.model.new_model()
+    pfl = pitacard.profile.Profile()
 
     # read file format info
     try:
-        version = db.read_field('format', 'file_version', conn)
+        version = pitacard.db.read_field('format', 'file_version', conn)
         logger.info('File version for %s: %d' % (filename, version))
-    except db.NoSuchTableError:
+    except pitacard.db.NoSuchTableError:
         logger.warning('No format information exists in file %s.' % filename)
-    except db.NoSuchValueError:
+    except pitacard.db.NoSuchValueError:
         logger.error('Invalid format info for %s' % filename)
 
     # read profile info
-    if not db.table_exists(conn.cursor(), 'profile'):
+    if not pitacard.db.table_exists(conn.cursor(), 'profile'):
         logger.warning('No profile information exists i nfile %s' % filename)
     else:
-        pfl.selection_method = int(db.read_field('profile', 'selection_method', conn,
+        pfl.selection_method = int(pitacard.db.read_field('profile', 'selection_method', conn,
                                                  pfl.selection_method))
-        pfl.sandbox = bool(db.read_field('profile', 'sandbox', conn,
+        pfl.sandbox = bool(pitacard.db.read_field('profile', 'sandbox', conn,
                                          pfl.sandbox))
-        pfl.render_html = bool(db.read_field('profile', 'render_html', conn,
+        pfl.render_html = bool(pitacard.db.read_field('profile', 'render_html', conn,
                                              pfl.render_html))
-        pfl.review_mode = int(db.read_field('profile', 'review_mode', conn,
+        pfl.review_mode = int(pitacard.db.read_field('profile', 'review_mode', conn,
                                             pfl.review_mode))
 
     # read cards
     cursor = conn.cursor()
-    if db.table_exists(cursor, 'cards'):
+    if pitacard.db.table_exists(cursor, 'cards'):
         cursor.execute('select ' + 
                        ','.join([f[0] for f in card_fields]) +
                        ' from cards')

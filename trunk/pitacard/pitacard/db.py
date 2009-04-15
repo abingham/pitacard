@@ -1,5 +1,5 @@
 # pitacard: A Leitner-method flashcard program
-# Copyright (C) 2006 Austin Bingham
+# Copyright (C) 2006-2008 Austin Bingham
 #
 # This program is free software you can redistribute it and/or
 # modify it under the terms of the GNU General Public License

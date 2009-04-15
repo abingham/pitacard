@@ -2,7 +2,7 @@
 <!DOCTYPE glade-interface SYSTEM "glade-2.0.dtd">
 <!--*- mode: xml -*-->
 <glade-interface>
-  <widget class="GtkWindow" id="MainWindow">
+  <widget class="GtkWindow" id="main_window">
     <property name="visible">True</property>
     <property name="title" translatable="yes">PitaCard</property>
     <child>
@@ -35,6 +35,18 @@
                         <property name="use_underline">True</property>
                         <property name="use_stock">True</property>
                         <signal name="activate" handler="on_open_menu_activate"/>
+                      </widget>
+                    </child>
+                    <child>
+                      <widget class="GtkMenuItem" id="open_recent_menu">
+                        <property name="visible">True</property>
+                        <property name="label" translatable="yes">Open Recent</property>
+                        <property name="use_underline">True</property>
+                      </widget>
+                    </child>
+                    <child>
+                      <widget class="GtkSeparatorMenuItem" id="">
+                        <property name="visible">True</property>
                       </widget>
                     </child>
                     <child>
@@ -81,53 +93,17 @@
                 <signal name="activate" handler="on_card1_activate"/>
                 <child>
                   <widget class="GtkMenu" id="mainmenu_cards_menu">
-                    <child>
-                      <widget class="GtkImageMenuItem" id="add_card_menu">
-                        <property name="visible">True</property>
-                        <property name="label">gtk-add</property>
-                        <property name="use_underline">True</property>
-                        <property name="use_stock">True</property>
-                        <signal name="activate" handler="on_add_card_menu_activate"/>
-                      </widget>
-                    </child>
-                    <child>
-                      <widget class="GtkImageMenuItem" id="edit_card_menu">
-                        <property name="visible">True</property>
-                        <property name="label">gtk-edit</property>
-                        <property name="use_underline">True</property>
-                        <property name="use_stock">True</property>
-                        <signal name="activate" handler="on_edit_card_menu_activate"/>
-                      </widget>
-                    </child>
-                    <child>
-                      <widget class="GtkImageMenuItem" id="delete_card_menu">
-                        <property name="visible">True</property>
-                        <property name="label">gtk-delete</property>
-                        <property name="use_underline">True</property>
-                        <property name="use_stock">True</property>
-                        <signal name="activate" handler="on_delete_card_menu_activate"/>
-                      </widget>
-                    </child>
-                    <child>
-                      <widget class="GtkSeparatorMenuItem" id="separator1">
-                        <property name="visible">True</property>
-                      </widget>
-                    </child>
-                    <child>
-                      <widget class="GtkImageMenuItem" id="review_menu">
-                        <property name="visible">True</property>
-                        <property name="label" translatable="yes">_Review</property>
-                        <property name="use_underline">True</property>
-                        <signal name="activate" handler="on_review_menu_activate"/>
-                        <child internal-child="image">
-                          <widget class="GtkImage" id="image121">
-                            <property name="visible">True</property>
-                            <property name="stock">gtk-execute</property>
-                            <property name="icon_size">1</property>
-                          </widget>
-                        </child>
-                      </widget>
-                    </child>
+                  </widget>
+                </child>
+              </widget>
+            </child>
+            <child>
+              <widget class="GtkMenuItem" id="mainmenu_review">
+                <property name="label" translatable="yes">_Review</property>
+                <property name="use_underline">True</property>
+                <child>
+                  <widget class="GtkMenu" id="menu1">
+                    <property name="visible">True</property>
                   </widget>
                 </child>
               </widget>
@@ -180,78 +156,9 @@
           </packing>
         </child>
         <child>
-          <widget class="GtkToolbar" id="toolbar1">
+          <widget class="GtkToolbar" id="edit_toolbar">
             <property name="visible">True</property>
             <property name="toolbar_style">GTK_TOOLBAR_BOTH</property>
-            <child>
-              <widget class="GtkToolButton" id="add_card_button">
-                <property name="visible">True</property>
-                <property name="tooltip" translatable="yes">Add a new card (shortcut: ctrl-a)</property>
-                <property name="label" translatable="yes">Add</property>
-                <property name="use_underline">True</property>
-                <property name="stock_id">gtk-add</property>
-                <signal name="clicked" handler="on_add_card_button_clicked"/>
-                <accelerator key="a" modifiers="GDK_CONTROL_MASK" signal="clicked"/>
-              </widget>
-              <packing>
-                <property name="expand">False</property>
-              </packing>
-            </child>
-            <child>
-              <widget class="GtkToolButton" id="edit_card_button">
-                <property name="visible">True</property>
-                <property name="sensitive">False</property>
-                <property name="tooltip" translatable="yes">Edit selected card (shortcut: ctrl-e)</property>
-                <property name="label" translatable="yes">Edit</property>
-                <property name="use_underline">True</property>
-                <property name="stock_id">gtk-edit</property>
-                <signal name="clicked" handler="on_edit_card_button_clicked"/>
-                <accelerator key="e" modifiers="GDK_CONTROL_MASK" signal="clicked"/>
-              </widget>
-              <packing>
-                <property name="expand">False</property>
-              </packing>
-            </child>
-            <child>
-              <widget class="GtkToolButton" id="delete_card_button">
-                <property name="visible">True</property>
-                <property name="sensitive">False</property>
-                <property name="tooltip" translatable="yes">Delete selected card (shortcut: ctrl-d)</property>
-                <property name="label" translatable="yes">Delete</property>
-                <property name="use_underline">True</property>
-                <property name="stock_id">gtk-delete</property>
-                <signal name="clicked" handler="on_delete_card_button_clicked"/>
-                <accelerator key="Delete" modifiers="" signal="clicked"/>
-                <accelerator key="d" modifiers="GDK_CONTROL_MASK" signal="clicked"/>
-              </widget>
-              <packing>
-                <property name="expand">False</property>
-              </packing>
-            </child>
-            <child>
-              <widget class="GtkSeparatorToolItem" id="separatortoolitem1">
-                <property name="visible">True</property>
-              </widget>
-              <packing>
-                <property name="expand">False</property>
-                <property name="homogeneous">False</property>
-              </packing>
-            </child>
-            <child>
-              <widget class="GtkToolButton" id="do_review_button">
-                <property name="visible">True</property>
-                <property name="sensitive">False</property>
-                <property name="tooltip" translatable="yes">Start a review session (shortcut: ctrl-r)</property>
-                <property name="label" translatable="yes">Review</property>
-                <property name="use_underline">True</property>
-                <property name="stock_id">gtk-execute</property>
-                <signal name="clicked" handler="on_do_review_button_clicked"/>
-                <accelerator key="r" modifiers="GDK_CONTROL_MASK" signal="clicked"/>
-              </widget>
-              <packing>
-                <property name="expand">False</property>
-              </packing>
-            </child>
             <child>
               <widget class="GtkToolItem" id="toolitem2">
                 <property name="visible">True</property>
@@ -275,7 +182,7 @@
           </packing>
         </child>
         <child>
-          <widget class="GtkScrolledWindow" id="scrolledwindow1">
+          <widget class="GtkScrolledWindow" id="edit_frame">
             <property name="visible">True</property>
             <property name="can_focus">True</property>
             <property name="shadow_type">GTK_SHADOW_IN</property>
@@ -293,10 +200,76 @@
           </packing>
         </child>
         <child>
+          <widget class="GtkToolbar" id="review_toolbar">
+            <property name="toolbar_style">GTK_TOOLBAR_BOTH</property>
+          </widget>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">False</property>
+            <property name="position">3</property>
+          </packing>
+        </child>
+        <child>
+          <widget class="GtkVBox" id="review_frame">
+            <child>
+              <widget class="GtkVBox" id="vbox3">
+                <property name="visible">True</property>
+                <child>
+                  <widget class="GtkLabel" id="label1">
+                    <property name="visible">True</property>
+                    <property name="label" translatable="yes">Front</property>
+                  </widget>
+                  <packing>
+                    <property name="expand">False</property>
+                  </packing>
+                </child>
+                <child>
+                  <widget class="GtkTextView" id="front_text_view">
+                    <property name="visible">True</property>
+                    <property name="can_focus">True</property>
+                  </widget>
+                  <packing>
+                    <property name="position">1</property>
+                  </packing>
+                </child>
+              </widget>
+            </child>
+            <child>
+              <widget class="GtkVBox" id="vbox4">
+                <property name="visible">True</property>
+                <child>
+                  <widget class="GtkLabel" id="label2">
+                    <property name="visible">True</property>
+                    <property name="label" translatable="yes">Back</property>
+                  </widget>
+                  <packing>
+                    <property name="expand">False</property>
+                  </packing>
+                </child>
+                <child>
+                  <widget class="GtkTextView" id="back_text_view">
+                    <property name="visible">True</property>
+                    <property name="can_focus">True</property>
+                  </widget>
+                  <packing>
+                    <property name="position">1</property>
+                  </packing>
+                </child>
+              </widget>
+              <packing>
+                <property name="position">1</property>
+              </packing>
+            </child>
+          </widget>
+          <packing>
+            <property name="position">4</property>
+          </packing>
+        </child>
+        <child>
           <widget class="GtkHBox" id="hbox1">
             <property name="visible">True</property>
             <child>
-              <widget class="GtkLabel" id="MainWindow - Status - Filename">
+              <widget class="GtkLabel" id="statusbar_left">
                 <property name="visible">True</property>
                 <property name="xpad">6</property>
                 <property name="label" translatable="yes">Unsaved</property>
@@ -307,36 +280,12 @@
               </packing>
             </child>
             <child>
-              <widget class="GtkAlignment" id="Main Window - Statusbar - Right half">
+              <widget class="GtkLabel" id="statusbar_right">
                 <property name="visible">True</property>
-                <property name="xscale">0</property>
-                <child>
-                  <widget class="GtkHBox" id="MainWindow - Statusbar - Secondframe">
-                    <property name="visible">True</property>
-                    <child>
-                      <widget class="GtkVSeparator" id="MainWindow - Statusbar - Separator">
-                        <property name="visible">True</property>
-                      </widget>
-                      <packing>
-                        <property name="expand">False</property>
-                        <property name="fill">False</property>
-                      </packing>
-                    </child>
-                    <child>
-                      <widget class="GtkLabel" id="MainWindow - Status - Cardcount">
-                        <property name="visible">True</property>
-                        <property name="xpad">15</property>
-                        <property name="label" translatable="yes">0 Cards</property>
-                        <property name="use_markup">True</property>
-                      </widget>
-                      <packing>
-                        <property name="expand">False</property>
-                        <property name="fill">False</property>
-                        <property name="position">1</property>
-                      </packing>
-                    </child>
-                  </widget>
-                </child>
+                <property name="xpad">15</property>
+                <property name="label" translatable="yes">0 Cards</property>
+                <property name="use_markup">True</property>
+                <property name="justify">GTK_JUSTIFY_RIGHT</property>
               </widget>
               <packing>
                 <property name="position">1</property>
@@ -346,7 +295,7 @@
           <packing>
             <property name="expand">False</property>
             <property name="fill">False</property>
-            <property name="position">3</property>
+            <property name="position">5</property>
           </packing>
         </child>
       </widget>
